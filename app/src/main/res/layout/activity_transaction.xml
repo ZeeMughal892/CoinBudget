@@ -44,7 +44,7 @@
         app:menu="@menu/menu_bottom_navigation" />
     <ProgressBar
         android:visibility="gone"
-        android:id="@+id/progressBarTransaction"
+        android:id="@+id/progressBarRecurringExpenses"
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

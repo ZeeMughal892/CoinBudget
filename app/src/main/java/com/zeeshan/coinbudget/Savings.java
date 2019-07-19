@@ -34,10 +34,10 @@ public class Savings extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(),Budget.class));
                         break;
                     case R.id.income:
-                        startActivity(new Intent(getApplicationContext(),Income.class));
+                        startActivity(new Intent(getApplicationContext(), EstimatedExpensesDetails.class));
                         break;
                     case R.id.expenses:
-                        startActivity(new Intent(getApplicationContext(),Expenses.class));
+                        startActivity(new Intent(getApplicationContext(), RecurringExpensesDetails.class));
                         break;
                     case R.id.savings:
                         startActivity(new Intent(getApplicationContext(),Savings.class));

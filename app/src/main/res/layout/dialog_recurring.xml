@@ -19,8 +19,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:fontFamily="@font/aclonica"
-            android:text="@string/look_up_name"
             android:gravity="center"
+            android:text="@string/look_up_name"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -28,79 +28,69 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8sp"
-            android:text="@string/please_enter_the_expenses"
+            android:text="@string/please_provide_the_expense_details"
             android:textSize="12sp" />
 
         <EditText
-            android:id="@+id/ed_Amount"
-            android:inputType="numberDecimal"
+            android:id="@+id/ed_RecurringAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_dialog_edit_text"
             android:hint="@string/amount"
+            android:inputType="numberDecimal"
             android:textSize="12sp" />
 
-        <EditText
-            android:id="@+id/ed_Notes"
+
+        <Spinner
+            android:id="@+id/spinnerRecurring"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_dialog_edit_text"
-            android:hint="@string/notes"
-            android:inputType="textMultiLine"
+            android:background="@drawable/bg_spinner"
+            android:entries="@array/Frequency"
             android:textSize="12sp" />
 
-        <EditText
-            android:id="@+id/ed_Date"
-            android:enabled="false"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_dialog_edit_text"
-            android:hint="@string/date"
-            android:textSize="12sp" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnToday"
+            <EditText
+                android:id="@+id/ed_DateRecurring"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_height="35dp"
-                android:background="@drawable/bg_gradient"
-                android:fontFamily="@font/aclonica"
-                android:text="@string/today"
-                android:textAllCaps="false"
-                android:textColor="@color/colorWhite"
-                android:textSize="10sp" />
+                android:background="@drawable/bg_dialog_edit_text"
+                android:enabled="false"
+                android:hint="@string/due_date_of_expense"
+                android:textSize="12sp" />
 
             <Button
-                android:id="@+id/btnYesterday"
+                android:id="@+id/btnSelectDateRecurring"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="35dp"
-                android:background="@color/colorWhite"
-                android:fontFamily="@font/aclonica"
-                android:text="@string/yesterday"
-                android:textAllCaps="false"
-                android:textColor="@color/colorPrimary"
-                android:textSize="10sp" />
-            <Button
-                android:id="@+id/btnOtherDate"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="35dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="0.5"
                 android:background="@drawable/bg_gradient"
-                android:fontFamily="@font/aclonica"
-                android:text="@string/other_date"
+                android:text="@string/select_date"
                 android:textAllCaps="false"
                 android:textColor="@color/colorWhite"
-                android:textSize="10sp" />
+                android:textSize="12sp" />
         </LinearLayout>
 
+        <EditText
+            android:id="@+id/ed_descRecurring"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/bg_dialog_edit_text"
+            android:gravity="start|top"
+            android:hint="@string/description"
+            android:inputType="textMultiLine"
+            android:paddingTop="10dp"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -108,7 +98,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnAdd"
+                android:id="@+id/btnAddRecurring"
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
                 android:background="@drawable/bg_gradient"

@@ -3,14 +3,17 @@ package com.zeeshan.coinbudget;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -21,35 +24,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.zeeshan.coinbudget.adapter.LookupAdapter;
-import com.zeeshan.coinbudget.model.Lookup;
-import com.zeeshan.coinbudget.model.User;
+import com.zeeshan.coinbudget.adapter.RecurringDetailAdapter;
+import com.zeeshan.coinbudget.adapter.RecurringExpenseAdapter;
+import com.zeeshan.coinbudget.model.RecurringExpenses;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Transaction extends AppCompatActivity {
+public class RecurringExpensesDetails extends AppCompatActivity {
 
     Toolbar toolbar;
     BottomNavigationView bottomNavigationView;
-    RecyclerView recyclerViewTransactions;
-    List<Lookup> lookupList;
-    LookupAdapter lookupAdapter;
-    DatabaseReference databaseLookup, databaseUsers;
-    String LookupName = "Transaction";
-    ProgressBar progressBar;
+    RecyclerView recyclerViewRecurringDetails;
+    RecurringDetailAdapter recurringDetailAdapter;
+    List<RecurringExpenses> recurringExpensesList;
+    DatabaseReference databaseRecurringExpenses;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    Boolean isPremium;
+    TextView txtTotalRecurringAmount;
+    int total = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transaction);
-
+        setContentView(R.layout.activity_recurring_expenses_details);
         init();
         setUpToolbar();
-        progressBar.setVisibility(View.VISIBLE);
+        bottomNavigationView.setSelectedItemId(R.id.expenses);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -73,45 +74,37 @@ public class Transaction extends AppCompatActivity {
                 return true;
             }
         });
-        loadLookups();
-
-
+        loadRecurringExpense();
     }
 
-    private void loadLookups() {
-        databaseUsers.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+    private void loadRecurringExpense() {
+        databaseRecurringExpenses.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                isPremium = user.isPremium;
-            }
+                recurringExpensesList.clear();
+                for(DataSnapshot snapshot:dataSnapshot.getChildren()){
+                    RecurringExpenses recurringExpenses=snapshot.getValue(RecurringExpenses.class);
+                    if(recurringExpenses.getUserID().equals(firebaseUser.getUid())){
+                        recurringExpensesList.add(recurringExpenses);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        databaseLookup.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                lookupList.clear();
-                for (DataSnapshot lookupSnapshot : dataSnapshot.getChildren()) {
-                    Lookup lookup = lookupSnapshot.getValue(Lookup.class);
-                    if (LookupName.equals(lookup.getLookUpName()) && lookup.getPremium().equals(isPremium)) {
-                        lookupList.add(lookup);
                     }
                 }
-                lookupAdapter = new LookupAdapter(lookupList, LookupName);
-                recyclerViewTransactions.setLayoutManager(new GridLayoutManager(Transaction.this, 3));
-                recyclerViewTransactions.setAdapter(lookupAdapter);
-                progressBar.setVisibility(View.INVISIBLE);
+                recurringDetailAdapter = new RecurringDetailAdapter(recurringExpensesList);
+                recyclerViewRecurringDetails.setHasFixedSize(true);
+                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+                recyclerViewRecurringDetails.setLayoutManager(mLayoutManager);
+                recyclerViewRecurringDetails.setItemAnimator(new DefaultItemAnimator());
+                recyclerViewRecurringDetails.setAdapter(recurringDetailAdapter);
+
+                for (RecurringExpenses recurringExpenses : recurringExpensesList) {
+                    total += (Integer.parseInt(recurringExpenses.getExpenseAmount()));
+                    txtTotalRecurringAmount.setText(String.valueOf(total));
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(RecurringExpensesDetails.this,databaseError.getMessage(),Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -124,7 +117,7 @@ public class Transaction extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(Transaction.this, MainDashboard.class));
+                startActivity(new Intent(RecurringExpensesDetails.this, MainDashboard.class));
             }
         });
     }
@@ -132,12 +125,11 @@ public class Transaction extends AppCompatActivity {
     private void init() {
         toolbar = findViewById(R.id.toolbar);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        recyclerViewTransactions = findViewById(R.id.recyclerViewTransaction);
-        lookupList = new ArrayList<>();
-        databaseLookup = FirebaseDatabase.getInstance().getReference("Lookups");
-        databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
-        progressBar = findViewById(R.id.progressBarRecurringExpenses);
+        recyclerViewRecurringDetails = findViewById(R.id.recyclerViewRecurringDetails);
+        recurringExpensesList = new ArrayList<>();
+        databaseRecurringExpenses = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        txtTotalRecurringAmount=findViewById(R.id.txtTotalRecurringAmount);
     }
 }

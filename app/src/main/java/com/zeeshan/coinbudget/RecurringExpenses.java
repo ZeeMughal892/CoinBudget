@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -21,35 +22,35 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.zeeshan.coinbudget.adapter.LookupAdapter;
+import com.zeeshan.coinbudget.adapter.RecurringExpenseAdapter;
 import com.zeeshan.coinbudget.model.Lookup;
 import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Transaction extends AppCompatActivity {
-
+public class RecurringExpenses extends AppCompatActivity {
     Toolbar toolbar;
     BottomNavigationView bottomNavigationView;
-    RecyclerView recyclerViewTransactions;
+    RecyclerView recyclerViewRecurringExpenses;
     List<Lookup> lookupList;
-    LookupAdapter lookupAdapter;
+    RecurringExpenseAdapter recurringExpenseAdapter;
     DatabaseReference databaseLookup, databaseUsers;
-    String LookupName = "Transaction";
-    ProgressBar progressBar;
+    String LookupName = "Recurring Monthly Expense";
+    ProgressBar progressBarRecurringExpenses;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
     Boolean isPremium;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transaction);
+        setContentView(R.layout.activity_recurring_expenses);
 
         init();
         setUpToolbar();
-        progressBar.setVisibility(View.VISIBLE);
+        progressBarRecurringExpenses.setVisibility(View.VISIBLE);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -88,7 +89,7 @@ public class Transaction extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(RecurringExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -102,16 +103,16 @@ public class Transaction extends AppCompatActivity {
                         lookupList.add(lookup);
                     }
                 }
-                lookupAdapter = new LookupAdapter(lookupList, LookupName);
-                recyclerViewTransactions.setLayoutManager(new GridLayoutManager(Transaction.this, 3));
-                recyclerViewTransactions.setAdapter(lookupAdapter);
-                progressBar.setVisibility(View.INVISIBLE);
+                recurringExpenseAdapter = new RecurringExpenseAdapter(lookupList, LookupName);
+                recyclerViewRecurringExpenses.setLayoutManager(new GridLayoutManager(RecurringExpenses.this, 3));
+                recyclerViewRecurringExpenses.setAdapter(recurringExpenseAdapter);
+                progressBarRecurringExpenses.setVisibility(View.INVISIBLE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(RecurringExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                progressBarRecurringExpenses.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -124,19 +125,35 @@ public class Transaction extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(Transaction.this, MainDashboard.class));
+                startActivity(new Intent(RecurringExpenses.this, MainDashboard.class));
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_details, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.btnDetails) {
+            startActivity(new Intent(RecurringExpenses.this,RecurringExpensesDetails.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void init() {
         toolbar = findViewById(R.id.toolbar);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        recyclerViewTransactions = findViewById(R.id.recyclerViewTransaction);
+        recyclerViewRecurringExpenses = findViewById(R.id.recyclerViewRecurringExpenses);
         lookupList = new ArrayList<>();
         databaseLookup = FirebaseDatabase.getInstance().getReference("Lookups");
         databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
-        progressBar = findViewById(R.id.progressBarRecurringExpenses);
+        progressBarRecurringExpenses = findViewById(R.id.progressBarRecurringExpenses);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
     }

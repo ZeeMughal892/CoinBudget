@@ -77,6 +77,17 @@
     <string name="total_estimated_expenses">Total Estimated Expenses</string>
     <string name="total_remaining_amount">Total Remaining Amount</string>
     <string name="please_enter_your_income_amount_frequency_and_description">Please enter your income amount, frequency and description</string>
+    <string name="select_expense_type">Select Expense Type</string>
+    <string name="recurring_expenses">Recurring Expenses</string>
+    <string name="estimated_expenses">Estimated Expenses</string>
+    <string name="due_date_of_expense">Due Date of Expense</string>
+    <string name="please_provide_the_expense_details">Please provide the expense details</string>
+    <string name="details">Details</string>
+    <string name="frequency">Frequency</string>
+    <string name="due_date">Due Date</string>
+    <string name="total_recurring_expense">Total Recurring Expense =</string>
+    <string name="total_estimated_expense">Total Estimated Expense =</string>
+    <string name="_0_00">0.00</string>
 
     <string-array name="Frequency">
         <item>Monthly</item>

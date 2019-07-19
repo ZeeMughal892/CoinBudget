@@ -5,6 +5,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -74,15 +75,17 @@ public class MainDashboard extends AppCompatActivity {
     List<ExpenseOverview> expenseOverviewList;
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
-    Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogPin, dialogLogout, dialogReminder,dialogBudget;
+    Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses;
     Button btnReset, btnCancel, btnUpdateUserInfo, btnUpdateCurrency, btnUpdateFrequency, btnUpdatePin, btnLogout, btnCancelLogout, btnSetReminder, btnSelectDateTime;
-    EditText edEmail, edFullName, edPassword, edPin, edReEnterPin, edDateReminder, edNotesReminder;
-    Spinner spinnerFrequency, spinnerCurrency;
+    EditText edEmail, edFullName, edPassword, edPin, edReEnterPin, edDateReminder, edNotesReminder, edIncomeAmount, edIncomeDescription;
+    Spinner spinnerFrequency, spinnerCurrency, spinnerFrequencyIncome;
     String format;
     ProgressBar progressBarCurrency;
+    CardView cardViewRecurringExpenses, cardViewEstimatedExpenses;
+
     private int hourAlarm, minuteAlarm;
     private String fullName, userName, pin, currency, payFrequency;
-    private Boolean isPremium=false;
+    private Boolean isPremium = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -404,6 +407,14 @@ public class MainDashboard extends AppCompatActivity {
         dialogBudget.setContentView(R.layout.dialog_budget);
         dialogBudget.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        dialogIncome = new Dialog(MainDashboard.this);
+        dialogIncome.setContentView(R.layout.dialog_income_overview);
+        dialogIncome.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialogExpenses = new Dialog(MainDashboard.this);
+        dialogExpenses.setContentView(R.layout.dialog_expenses_overview);
+        dialogExpenses.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -415,10 +426,27 @@ public class MainDashboard extends AppCompatActivity {
                         dialogBudget.show();
                         break;
                     case R.id.income:
-                        startActivity(new Intent(getApplicationContext(), Income.class));
+                        dialogIncome.show();
                         break;
                     case R.id.expenses:
-                        startActivity(new Intent(getApplicationContext(), Expenses.class));
+                        cardViewRecurringExpenses = dialogExpenses.findViewById(R.id.cardViewRecurringExpense);
+                        cardViewEstimatedExpenses = dialogExpenses.findViewById(R.id.cardViewEstimatedExpenses);
+
+                        cardViewRecurringExpenses.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(MainDashboard.this, RecurringExpenses.class));
+                                dialogExpenses.dismiss();
+                            }
+                        });
+                        cardViewEstimatedExpenses.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(MainDashboard.this, EstimatedExpenses.class));
+                                dialogExpenses.dismiss();
+                            }
+                        });
+                        dialogExpenses.show();
                         break;
                     case R.id.savings:
                         startActivity(new Intent(getApplicationContext(), Savings.class));
@@ -471,13 +499,14 @@ public class MainDashboard extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                if(user.getPremium().equals(isPremium)){
+                if (user.getPremium().equals(isPremium)) {
                     hideItem();
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(MainDashboard.this,databaseError.getMessage(),Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
         MainAdapter mainAdapter = new MainAdapter(expenseOverviewList);

@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,28 +25,25 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 import com.zeeshan.coinbudget.R;
-import com.zeeshan.coinbudget.model.ExtraIncome;
 import com.zeeshan.coinbudget.model.Lookup;
-import com.zeeshan.coinbudget.model.Transactions;
+import com.zeeshan.coinbudget.model.RecurringExpenses;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+
 import java.util.List;
 
-public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHolder> {
+public class RecurringExpenseAdapter extends RecyclerView.Adapter<RecurringExpenseAdapter.MyViewHolder> {
 
     private List<Lookup> lookupList;
-    private Dialog dialog;
-    TextView txtLookup;
-    DatePickerDialog datePickerDialog;
-    EditText ed_Amount, ed_Notes, ed_Date;
-    Button btnAdd, btnToday, btnYesterday, btnOtherDay;
-    ImageView imgIconDialog;
-    DatabaseReference databaseReference;
-    FirebaseAuth firebaseAuth;
-    FirebaseUser firebaseUser;
-    String mode;
+    private Dialog dialogRecurring;
+    private TextView txtLookup;
+    private DatePickerDialog datePickerDialog;
+    private EditText ed_AmountRecurring, ed_DateRecurring, ed_Description;
+    private Button btnAddRecurring, btnDateRecurring;
+    private ImageView imgIconDialog;
+    private DatabaseReference databaseReference;
+    private Spinner spinnerRecurring;
+    private FirebaseUser firebaseUser;
+    private String mode;
 
     class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -62,7 +60,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
         }
     }
 
-    public LookupAdapter(List<Lookup> lookupList, String mode) {
+    public RecurringExpenseAdapter(List<Lookup> lookupList, String mode) {
         this.lookupList = lookupList;
         this.mode = mode;
     }
@@ -73,83 +71,62 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
         final View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.row_lookup_item, viewGroup, false);
         final MyViewHolder myViewHolder = new MyViewHolder(itemView);
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference(mode);
 
-        dialog = new Dialog(itemView.getContext());
-        dialog.setContentView(R.layout.dialog_extra_income);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialogRecurring = new Dialog(itemView.getContext());
+        dialogRecurring.setContentView(R.layout.dialog_recurring);
+        dialogRecurring.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         myViewHolder.cardViewLookup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                txtLookup = dialog.findViewById(R.id.txtLookup);
+                txtLookup = dialogRecurring.findViewById(R.id.txtLookup);
 
-                ed_Amount = dialog.findViewById(R.id.ed_Amount);
-                ed_Notes = dialog.findViewById(R.id.ed_Notes);
-                ed_Date = dialog.findViewById(R.id.ed_Date);
+                ed_AmountRecurring = dialogRecurring.findViewById(R.id.ed_RecurringAmount);
+                spinnerRecurring = dialogRecurring.findViewById(R.id.spinnerRecurring);
+                ed_Description = dialogRecurring.findViewById(R.id.ed_descRecurring);
+                ed_DateRecurring = dialogRecurring.findViewById(R.id.ed_DateRecurring);
+                imgIconDialog = dialogRecurring.findViewById(R.id.imgLogo);
+                btnDateRecurring = dialogRecurring.findViewById(R.id.btnSelectDateRecurring);
+                btnAddRecurring = dialogRecurring.findViewById(R.id.btnAddRecurring);
 
                 datePickerDialog = new DatePickerDialog(itemView.getContext());
                 datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                         String Date = day + "/" + month + "/" + year;
-                        ed_Date.setText(Date);
+                        ed_DateRecurring.setText(Date);
                     }
                 });
 
-                btnAdd = dialog.findViewById(R.id.btnAdd);
-                btnToday = dialog.findViewById(R.id.btnToday);
-                btnYesterday = dialog.findViewById(R.id.btnYesterday);
-                btnOtherDay = dialog.findViewById(R.id.btnOtherDate);
-
-                imgIconDialog = dialog.findViewById(R.id.imgLogo);
-
-                btnOtherDay.setOnClickListener(new View.OnClickListener() {
+                btnDateRecurring.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         datePickerDialog.show();
                     }
                 });
-                btnToday.setOnClickListener(new View.OnClickListener() {
+
+                ed_Description.setText(lookupList.get(myViewHolder.getAdapterPosition()).getLookUpItemName());
+
+                btnAddRecurring.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                        Calendar cal = Calendar.getInstance();
-                        cal.add(Calendar.DATE, 0);
-                        ed_Date.setText((dateFormat.format(cal.getTime())));
-                    }
-                });
-                btnYesterday.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                        Calendar cal = Calendar.getInstance();
-                        cal.add(Calendar.DATE, -1);
-                        ed_Date.setText((dateFormat.format(cal.getTime())));
-                    }
-                });
-                btnAdd.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String modeID = databaseReference.push().getKey();
+                        String expenseId = databaseReference.push().getKey();
                         String userID = firebaseUser.getUid();
                         String source = txtLookup.getText().toString();
-                        String amount = ed_Amount.getText().toString().trim();
-                        String notes = ed_Notes.getText().toString().trim();
-                        String date = ed_Date.getText().toString().trim();
+                        String amount = ed_AmountRecurring.getText().toString().trim();
+                        String description = ed_Description.getText().toString().trim();
+                        String frequency = spinnerRecurring.getSelectedItem().toString().trim();
+                        String date = ed_DateRecurring.getText().toString().trim();
 
-                        if(mode.equals("Extra EstimatedExpensesDetails")){
-                            ExtraIncome extraIncome = new ExtraIncome(modeID, userID, source, amount, notes, false, date);
-                            databaseReference.child(modeID).setValue(extraIncome);
-                        }
-                        else {
-                            Transactions transactions = new Transactions(modeID,userID,source,amount,notes,false,date);
-                            databaseReference.child(modeID).setValue(transactions);
-                        }
-                        Toast.makeText(view.getContext(), "Information Added Successfully", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
+                        RecurringExpenses recurringExpenses = new RecurringExpenses(expenseId, userID, source, amount, frequency, date, description);
+                        databaseReference.child(expenseId).setValue(recurringExpenses);
+
+                        Toast.makeText(view.getContext(), "Expense Added Successfully", Toast.LENGTH_SHORT).show();
+                        ed_AmountRecurring.setText(null);
+                        dialogRecurring.dismiss();
                     }
                 });
 
@@ -161,7 +138,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                         .centerInside()
                         .placeholder(R.drawable.ic_coinbudget)
                         .into(imgIconDialog);
-                dialog.show();
+                dialogRecurring.show();
             }
         });
         return myViewHolder;

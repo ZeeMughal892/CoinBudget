@@ -3,14 +3,15 @@ package com.zeeshan.coinbudget;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -21,35 +22,37 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.zeeshan.coinbudget.adapter.LookupAdapter;
-import com.zeeshan.coinbudget.model.Lookup;
-import com.zeeshan.coinbudget.model.User;
+import com.zeeshan.coinbudget.adapter.EstimatedDetailAdapter;
+import com.zeeshan.coinbudget.adapter.EstimatedExpenseAdapter;
+import com.zeeshan.coinbudget.adapter.RecurringDetailAdapter;
+import com.zeeshan.coinbudget.model.EstimatedExpenses;
+import com.zeeshan.coinbudget.model.RecurringExpenses;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Transaction extends AppCompatActivity {
+public class EstimatedExpensesDetails extends AppCompatActivity {
 
     Toolbar toolbar;
     BottomNavigationView bottomNavigationView;
-    RecyclerView recyclerViewTransactions;
-    List<Lookup> lookupList;
-    LookupAdapter lookupAdapter;
-    DatabaseReference databaseLookup, databaseUsers;
-    String LookupName = "Transaction";
-    ProgressBar progressBar;
+    RecyclerView recyclerViewEstimatedDetails;
+    EstimatedDetailAdapter estimatedDetailAdapter;
+    List<EstimatedExpenses> estimatedExpensesList;
+    DatabaseReference databaseEstimatedExpenses;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    Boolean isPremium;
+    TextView txtTotalEstimatedAmount;
+
+    int total = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transaction);
-
+        setContentView(R.layout.activity_estimated_expenses_details);
         init();
         setUpToolbar();
-        progressBar.setVisibility(View.VISIBLE);
+        loadEstimatedExpense();
+        bottomNavigationView.setSelectedItemId(R.id.income);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -73,45 +76,36 @@ public class Transaction extends AppCompatActivity {
                 return true;
             }
         });
-        loadLookups();
-
-
     }
 
-    private void loadLookups() {
-        databaseUsers.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+    private void loadEstimatedExpense() {
+        databaseEstimatedExpenses.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                isPremium = user.isPremium;
-            }
+                estimatedExpensesList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    EstimatedExpenses estimatedExpenses = snapshot.getValue(EstimatedExpenses.class);
+                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
+                        estimatedExpensesList.add(estimatedExpenses);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        databaseLookup.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                lookupList.clear();
-                for (DataSnapshot lookupSnapshot : dataSnapshot.getChildren()) {
-                    Lookup lookup = lookupSnapshot.getValue(Lookup.class);
-                    if (LookupName.equals(lookup.getLookUpName()) && lookup.getPremium().equals(isPremium)) {
-                        lookupList.add(lookup);
                     }
                 }
-                lookupAdapter = new LookupAdapter(lookupList, LookupName);
-                recyclerViewTransactions.setLayoutManager(new GridLayoutManager(Transaction.this, 3));
-                recyclerViewTransactions.setAdapter(lookupAdapter);
-                progressBar.setVisibility(View.INVISIBLE);
+                estimatedDetailAdapter = new EstimatedDetailAdapter(estimatedExpensesList);
+                recyclerViewEstimatedDetails.setHasFixedSize(true);
+                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+                recyclerViewEstimatedDetails.setLayoutManager(mLayoutManager);
+                recyclerViewEstimatedDetails.setItemAnimator(new DefaultItemAnimator());
+                recyclerViewEstimatedDetails.setAdapter(estimatedDetailAdapter);
+
+                for (EstimatedExpenses estimatedExpenses : estimatedExpensesList) {
+                    total += (Integer.parseInt(estimatedExpenses.getExpenseAmount()));
+                    txtTotalEstimatedAmount.setText(String.valueOf(total));
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(EstimatedExpensesDetails .this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -124,7 +118,7 @@ public class Transaction extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(Transaction.this, MainDashboard.class));
+                startActivity(new Intent(EstimatedExpensesDetails.this, MainDashboard.class));
             }
         });
     }
@@ -132,12 +126,11 @@ public class Transaction extends AppCompatActivity {
     private void init() {
         toolbar = findViewById(R.id.toolbar);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        recyclerViewTransactions = findViewById(R.id.recyclerViewTransaction);
-        lookupList = new ArrayList<>();
-        databaseLookup = FirebaseDatabase.getInstance().getReference("Lookups");
-        databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
-        progressBar = findViewById(R.id.progressBarRecurringExpenses);
+        estimatedExpensesList = new ArrayList<>();
+        databaseEstimatedExpenses = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        txtTotalEstimatedAmount = findViewById(R.id.txtTotalEstimatedAmount);
+        recyclerViewEstimatedDetails=findViewById(R.id.recyclerViewEstimatedDetails);
     }
 }

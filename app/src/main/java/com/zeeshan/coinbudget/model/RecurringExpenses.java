@@ -1,27 +1,33 @@
 package com.zeeshan.coinbudget.model;
 
 public class RecurringExpenses {
+    private String expenseID;
     private String userID;
     private String expenseName;
     private String expenseAmount;
     private String frequency;
     private String dueDate;
     private String description;
-    private Boolean isPremium;
-    private String totalRecurringAmount;
 
     public RecurringExpenses() {
     }
 
-    public RecurringExpenses(String userID, String expenseName, String expenseAmount, String frequency, String dueDate, String description, Boolean isPremium, String totalRecurringAmount) {
+    public RecurringExpenses(String expenseID,String userID, String expenseName, String expenseAmount, String frequency, String dueDate, String description) {
+        this.expenseID = expenseID;
         this.userID = userID;
         this.expenseName = expenseName;
         this.expenseAmount = expenseAmount;
         this.frequency = frequency;
         this.dueDate = dueDate;
         this.description = description;
-        this.isPremium = isPremium;
-        this.totalRecurringAmount = totalRecurringAmount;
+    }
+
+    public String getExpenseID() {
+        return expenseID;
+    }
+
+    public void setExpenseID(String expenseID) {
+        this.expenseID = expenseID;
     }
 
     public String getUserID() {
@@ -72,19 +78,5 @@ public class RecurringExpenses {
         this.description = description;
     }
 
-    public Boolean getPremium() {
-        return isPremium;
-    }
 
-    public void setPremium(Boolean premium) {
-        isPremium = premium;
-    }
-
-    public String getTotalRecurringAmount() {
-        return totalRecurringAmount;
-    }
-
-    public void setTotalRecurringAmount(String totalRecurringAmount) {
-        this.totalRecurringAmount = totalRecurringAmount;
-    }
 }

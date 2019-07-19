@@ -13,15 +13,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Transaction"></activity>
+        <activity android:name=".EstimatedExpenses"></activity>
+        <activity android:name=".RecurringExpenses" />
+        <activity android:name=".Transaction" />
         <activity android:name=".ExtraIncome" />
-        <activity android:name=".EnterLookup">
-
-        </activity>
+        <activity android:name=".EnterLookup" />
         <activity android:name=".Bank" />
-        <activity android:name=".Expenses" />
+        <activity android:name=".RecurringExpensesDetails" />
         <activity android:name=".Savings" />
-        <activity android:name=".Income" />
+        <activity android:name=".EstimatedExpensesDetails" />
         <activity android:name=".Budget" />
         <activity
             android:name=".Register"
@@ -43,7 +43,8 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-        <receiver android:name=".utils.AlarmReceiver"/>
+
+        <receiver android:name=".utils.AlarmReceiver" />
     </application>
 
 </manifest>
