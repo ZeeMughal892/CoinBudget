@@ -1,0 +1,93 @@
+<resources>
+    <string name="app_name">Coin Budget</string>
+
+    <string name="facebook_application_id" translatable="false">2401378966809512</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb2401378966809512</string>
+
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="login_to_your_account">Login to Your Account</string>
+    <string name="full_name">Full Name</string>
+    <string name="register">Register</string>
+    <string name="create_a_new_account">Create a New Account</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_in_now">Sign In Now !</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="pay_period_frequency">Pay Period Frequency</string>
+    <string name="user_information">User Information</string>
+    <string name="reminder">Reminder</string>
+    <string name="reset_app">Reset App</string>
+    <string name="pin">Pin</string>
+    <string name="currency">Currency</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="logout">Logout</string>
+    <string name="main">Main</string>
+    <string name="bank">Bank</string>
+    <string name="budget">Budget</string>
+    <string name="income">Income</string>
+    <string name="expenses">Expenses</string>
+    <string name="savings">Savings</string>
+    <string name="_250">$ 250</string>
+    <string name="remaining_budget_until_next_paycheck">Remaining Budget until next paycheck</string>
+    <string name="_15_days">15 Days</string>
+    <string name="until_next_paycheck">until next paycheck</string>
+    <string name="average_budget">Average Budget</string>
+    <string name="bank_overview">Bank Overview</string>
+    <string name="budget_overview">Budget Overview</string>
+    <string name="expenses_overview">Expenses Overview</string>
+    <string name="income_overview">Income Overview</string>
+    <string name="savings_overview">Savings Overview</string>
+    <string name="extra_income">Extra Income</string>
+    <string name="transactions">Transactions</string>
+    <string name="add_item">Add Item</string>
+    <string name="todo">TODO</string>
+    <string name="look_up_name">Look Up Name</string>
+    <string name="amount">Amount</string>
+    <string name="notes">Notes</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="today">Today</string>
+    <string name="other_date">Other Date</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="date">Date</string>
+    <string name="please_enter_amount_of_transaction">Please Enter Amount of Transaction</string>
+    <string name="lookup_name">Lookup Name</string>
+    <string name="please_enter_the_expenses">Please Enter the Amount, Notes and Date</string>
+    <string name="no_data_available">NO DATA AVAILABLE</string>
+    <string name="are_you_sure_you_want_to_reset_the_app">Are you sure you want to reset the app?</string>
+    <string name="please_enter_your_credentials">Please Enter your Credentials Below</string>
+    <string name="update">Update</string>
+    <string name="please_select_frequency_of_income">Please Select Frequency of Income</string>
+    <string name="choose_a_pin_code">Choose a Pin Code</string>
+    <string name="please_select_a_4_6_digit_pin_code">Please select a 4-6 digit pin code</string>
+    <string name="re_enter_pin">Re-Enter Pin</string>
+    <string name="ok">OK</string>
+    <string name="are_you_sure_you_want_to_logout">Are you sure you want to Logout?</string>
+    <string name="please_select_your_currency">Please select your currency</string>
+    <string name="set_your_reminder_along_some_notes">Set your reminder along some notes</string>
+    <string name="note">Note</string>
+    <string name="select_date">Select Date</string>
+    <string name="set_reminder">Set Reminder</string>
+    <string name="description">Description</string>
+    <string name="total_income">Total Income</string>
+    <string name="total_recurring_expenses">Total Recurring Expenses</string>
+    <string name="total_estimated_expenses">Total Estimated Expenses</string>
+    <string name="total_remaining_amount">Total Remaining Amount</string>
+    <string name="please_enter_your_income_amount_frequency_and_description">Please enter your income amount, frequency and description</string>
+
+    <string-array name="Frequency">
+        <item>Monthly</item>
+        <item>Bi-Monthly</item>
+        <item>Every Two Weeks</item>
+        <item>Weekly</item>
+    </string-array>
+    <string-array name="LookupNames">
+        <item>Extra Income</item>
+        <item>Transaction</item>
+        <item>Estimated Monthly Expense</item>
+        <item>Recurring Monthly Expense</item>
+    </string-array>
+</resources>

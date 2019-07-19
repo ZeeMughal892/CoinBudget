@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/bg_relative_layout"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/aclonica"
+            android:text="@string/user_information"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8sp"
+            android:text="@string/please_enter_your_credentials"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/ed_Email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_dialog_edit_text"
+            android:enabled="false"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"
+            android:textSize="12sp" />
+
+
+        <EditText
+            android:id="@+id/ed_Password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_dialog_edit_text"
+            android:enabled="false"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/ed_FullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_dialog_edit_text"
+            android:hint="@string/full_name"
+            android:inputType="textPersonName"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnUpdateUserInfo"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:background="@drawable/bg_gradient"
+                android:fontFamily="@font/aclonica"
+                android:text="@string/update"
+                android:textAllCaps="false"
+                android:textColor="@color/colorWhite"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imgLogoUser"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:src="@mipmap/ic_user" />
+
+
+</RelativeLayout>

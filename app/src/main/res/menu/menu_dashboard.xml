@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/dashboard"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/dashboard" />
+        <item
+            android:id="@+id/payPeriodFrequency"
+            android:title="@string/pay_period_frequency"
+            android:icon="@drawable/ic_pay_period_frequency"/>
+        <item
+            android:id="@+id/userInformation"
+            android:title="@string/user_information"
+            android:icon="@drawable/ic_user_information"/>
+        <item
+            android:id="@+id/currency"
+            android:title="@string/currency"
+            android:icon="@drawable/ic_currency"/>
+        <item
+            android:id="@+id/reminder"
+            android:title="@string/reminder"
+            android:icon="@drawable/ic_reminder"/>
+        <item
+            android:id="@+id/pin"
+            android:title="@string/pin"
+            android:icon="@drawable/ic_pin"/>
+        <item
+            android:id="@+id/resetApp"
+            android:title="@string/reset_app"
+            android:icon="@drawable/ic_reset"/>
+        <item
+            android:id="@+id/logout"
+            android:title="@string/logout"
+            android:icon="@drawable/ic_vpn_key_black_24dp"/>
+    </group>
+</menu>
