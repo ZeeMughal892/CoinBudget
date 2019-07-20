@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -144,14 +145,14 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                         databaseBankAccount.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                totalAccountBalance=0.0;
+                                totalAccountBalance = 0.0;
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                     BankAccount bankAccount = snapshot.getValue(BankAccount.class);
                                     if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
                                         totalAccountBalance += Double.parseDouble(bankAccount.getAmount());
                                     }
                                 }
-                                if(totalAccountBalance == null){
+                                if (totalAccountBalance == null) {
                                     txtAccountBalance.setText("0.00");
                                 }
                                 txtAccountBalance.setText(String.valueOf(totalAccountBalance));
@@ -159,7 +160,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
 
@@ -186,12 +187,18 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                 String userId = firebaseUser.getUid();
                                 String amount = edAmountBank.getText().toString().trim();
                                 String date = edDateBank.getText().toString().trim();
-                                BankAccount bankAccount = new BankAccount(accountId, userId, amount, date);
-                                databaseBankAccount.child(accountId).setValue(bankAccount);
-                                Toast.makeText(EstimatedExpensesDetails.this, "Amount Added", Toast.LENGTH_SHORT).show();
-                                edAmountBank.setText(null);
-                                edDateBank.setText(null);
-                                dialogBank.dismiss();
+                                if (TextUtils.isEmpty(amount)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                } else if (TextUtils.isEmpty(date)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    BankAccount bankAccount = new BankAccount(accountId, userId, amount, date);
+                                    databaseBankAccount.child(accountId).setValue(bankAccount);
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Amount Added", Toast.LENGTH_SHORT).show();
+                                    edAmountBank.setText(null);
+                                    edDateBank.setText(null);
+                                    dialogBank.dismiss();
+                                }
                             }
                         });
                         dialogBank.show();
@@ -271,7 +278,9 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                 }
                                 txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
 
-                                totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) - (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) + Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
+                                totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
+                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
+                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
                                 txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
                                 progressBarBudget.setVisibility(View.INVISIBLE);
                             }
@@ -327,13 +336,21 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                 String date = edIncomeDate.getText().toString().trim();
                                 String desc = edIncomeDescription.getText().toString().trim();
                                 String frequency = spinnerFrequencyIncome.getSelectedItem().toString().trim();
-                                Income income = new Income(incomeId, userId, incomeAmount, frequency, date, desc);
-                                databaseIncome.child(incomeId).setValue(income);
-                                Toast.makeText(view.getContext(), "Income Added Successfully", Toast.LENGTH_SHORT).show();
-                                edIncomeAmount.setText(null);
-                                edIncomeDate.setText(null);
-                                edIncomeDescription.setText(null);
-                                dialogIncome.dismiss();
+                                if (TextUtils.isEmpty(incomeAmount)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                } else if (TextUtils.isEmpty(date)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                } else if (TextUtils.isEmpty(desc)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please enter description", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Income income = new Income(incomeId, userId, incomeAmount, frequency, date, desc);
+                                    databaseIncome.child(incomeId).setValue(income);
+                                    Toast.makeText(view.getContext(), "Income Added Successfully", Toast.LENGTH_SHORT).show();
+                                    edIncomeAmount.setText(null);
+                                    edIncomeDate.setText(null);
+                                    edIncomeDescription.setText(null);
+                                    dialogIncome.dismiss();
+                                }
                             }
                         });
                         dialogIncome.show();
@@ -396,13 +413,21 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                 String title = edSavingTitle.getText().toString().trim();
                                 String amount = edSavingAmount.getText().toString().trim();
                                 String date = edSavingDate.getText().toString().trim();
-                                com.zeeshan.coinbudget.model.Savings savings = new Savings(savingId, userId, title, amount, date);
-                                databaseSavings.child(savingId).setValue(savings);
-                                Toast.makeText(EstimatedExpensesDetails.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
-                                edSavingTitle.setText(null);
-                                edSavingAmount.setText(null);
-                                edSavingDate.setText(null);
-                                dialogSavings.dismiss();
+                                if (TextUtils.isEmpty(title)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please enter goal title", Toast.LENGTH_SHORT).show();
+                                } else if (TextUtils.isEmpty(amount)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                } else if (TextUtils.isEmpty(date)) {
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    com.zeeshan.coinbudget.model.Savings savings = new Savings(savingId, userId, title, amount, date);
+                                    databaseSavings.child(savingId).setValue(savings);
+                                    Toast.makeText(EstimatedExpensesDetails.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
+                                    edSavingTitle.setText(null);
+                                    edSavingAmount.setText(null);
+                                    edSavingDate.setText(null);
+                                    dialogSavings.dismiss();
+                                }
                             }
                         });
 

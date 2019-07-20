@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:fontFamily="@font/catamaran"
             android:text="@string/income_overview"
             android:textSize="14sp"
@@ -27,7 +27,6 @@
             android:id="@+id/btnIncomeDetails"
             android:layout_width="match_parent"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="16dp"
             android:layout_height="35dp"
             android:text="@string/check_income_details"
             android:background="@drawable/bg_gradient"
@@ -37,7 +36,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/or"
-            android:layout_marginBottom="8dp"
             android:fontFamily="@font/catamaran"
             />
 

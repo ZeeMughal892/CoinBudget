@@ -1,6 +1,7 @@
 package com.zeeshan.coinbudget;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +37,11 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -61,6 +67,7 @@ import com.zeeshan.coinbudget.utils.AppUtils;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -84,6 +91,8 @@ public class MainDashboard extends AppCompatActivity {
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
 
+    List<AuthUI.IdpConfig> providers;
+
     Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogBank,
             dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
 
@@ -98,6 +107,7 @@ public class MainDashboard extends AppCompatActivity {
 
     Spinner spinnerFrequency, spinnerCurrency, spinnerFrequencyIncome;
 
+    private static final int MY_REQUEST_CODE = 7117;
     String format;
     ProgressBar progressBarCurrency, progressBarBudget;
     private DatePickerDialog datePickerDialog;
@@ -114,6 +124,8 @@ public class MainDashboard extends AppCompatActivity {
 
         setContentView(R.layout.activity_main_dashboard);
         init();
+
+
         setUpToolbar();
         loadDashboard();
         progressBar.setVisibility(View.GONE);
@@ -296,7 +308,7 @@ public class MainDashboard extends AppCompatActivity {
                         hour = currentTime.get(Calendar.HOUR_OF_DAY);
                         minute = currentTime.get(Calendar.MINUTE);
                         selectedTimeFormat(hour);
-                        String time = hour + " : " + minute + " : " + format;
+                        final String time = hour + " : " + minute + " : " + format;
                         edDateReminder.setText(time);
                         final int notificationId = 1;
 
@@ -402,6 +414,13 @@ public class MainDashboard extends AppCompatActivity {
                         btnLogout.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                AuthUI.getInstance().signOut(MainDashboard.this).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        startActivity(new Intent(MainDashboard.this,SignIn.class));
+                                    }
+                                });
+
                                 FirebaseAuth.getInstance().signOut();
                                 dialogLogout.dismiss();
                                 Intent intent = new Intent(MainDashboard.this, Login.class);
@@ -449,19 +468,15 @@ public class MainDashboard extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.bank:
-
                         txtAccountBalance = dialogBank.findViewById(R.id.txtAccountBalance);
                         txtOR = dialogBank.findViewById(R.id.txtOR);
-
                         edAmountBank = dialogBank.findViewById(R.id.ed_AmountBank);
                         edDateBank = dialogBank.findViewById(R.id.ed_DateBank);
-
                         btnSelectDateBank = dialogBank.findViewById(R.id.btnSelectBankDate);
                         btnAddBankAmount = dialogBank.findViewById(R.id.btnAddBankAmount);
                         btnAddBankAccount = dialogBank.findViewById(R.id.btnAddBankAccount);
                         btnAddLoanAccount = dialogBank.findViewById(R.id.btnAddLoanAccount);
                         btnAddAdditionalAccount = dialogBank.findViewById(R.id.btnAddAdditionalAccount);
-
                         if (!isPremium) {
                             txtOR.setVisibility(View.GONE);
                             btnAddLoanAccount.setVisibility(View.GONE);
@@ -483,13 +498,11 @@ public class MainDashboard extends AppCompatActivity {
                                 }
                                 txtAccountBalance.setText(String.valueOf(totalAccountBalance));
                             }
-
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
-
                         datePickerDialog = new DatePickerDialog(MainDashboard.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
@@ -498,14 +511,12 @@ public class MainDashboard extends AppCompatActivity {
                                 edDateBank.setText(Date);
                             }
                         });
-
                         btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 datePickerDialog.show();
                             }
                         });
-
                         btnAddBankAmount.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -535,7 +546,6 @@ public class MainDashboard extends AppCompatActivity {
                         txtTotalRecurringExpenseBudget = dialogBudget.findViewById(R.id.txtRecurringExpensesBudget);
                         txtTotalRemainingAmountBudget = dialogBudget.findViewById(R.id.txtRemainingAmountBudget);
                         progressBarBudget = dialogBudget.findViewById(R.id.progress_barBudget);
-
                         databaseEstimatedExpense.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -548,7 +558,6 @@ public class MainDashboard extends AppCompatActivity {
                                 }
                                 txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
                             }
-
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
@@ -567,7 +576,6 @@ public class MainDashboard extends AppCompatActivity {
                                 }
                                 txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
                             }
-
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
@@ -603,7 +611,6 @@ public class MainDashboard extends AppCompatActivity {
                                     }
                                 }
                                 txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
-
                                 totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
                                         (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
                                                 Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
@@ -628,11 +635,9 @@ public class MainDashboard extends AppCompatActivity {
                         edIncomeDate = dialogIncome.findViewById(R.id.ed_DateIncome);
                         edIncomeDescription = dialogIncome.findViewById(R.id.ed_descIncome);
                         spinnerFrequencyIncome = dialogIncome.findViewById(R.id.spinnerIncome);
-
                         btnIncomeDetails = dialogIncome.findViewById(R.id.btnIncomeDetails);
                         btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
                         btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
-
                         datePickerDialog = new DatePickerDialog(MainDashboard.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
@@ -684,7 +689,6 @@ public class MainDashboard extends AppCompatActivity {
                     case R.id.expenses:
                         btnRecurringExpense = dialogExpenses.findViewById(R.id.btnRecurringExpense);
                         btnEstimatedExpense = dialogExpenses.findViewById(R.id.btnEstimatedExpense);
-
                         btnRecurringExpense.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -740,12 +744,12 @@ public class MainDashboard extends AppCompatActivity {
                                 String amount = edSavingAmount.getText().toString().trim();
                                 String date = edSavingDate.getText().toString().trim();
                                 if (TextUtils.isEmpty(title)) {
-
+                                    Toast.makeText(MainDashboard.this, "Please enter goal title", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(amount)) {
-
+                                    Toast.makeText(MainDashboard.this, "Please enter amount", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(date)) {
+                                    Toast.makeText(MainDashboard.this, "Please select date", Toast.LENGTH_SHORT).show();
                                 } else {
-
                                     com.zeeshan.coinbudget.model.Savings savings = new Savings(savingId, userId, title, amount, date);
                                     databaseSavings.child(savingId).setValue(savings);
                                     Toast.makeText(MainDashboard.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
@@ -782,6 +786,7 @@ public class MainDashboard extends AppCompatActivity {
         });
     }
 
+
     private void hideItem() {
         navigationView = findViewById(R.id.navigationView);
         Menu nav_Menu = navigationView.getMenu();
@@ -807,7 +812,7 @@ public class MainDashboard extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                if (user.getPremium().equals(isPremium)) {
+                if (isPremium.equals(user.getPremium())) {
                     hideItem();
                 }
             }
@@ -816,8 +821,6 @@ public class MainDashboard extends AppCompatActivity {
                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-
         MainAdapter mainAdapter = new MainAdapter(expenseOverviewList);
         recyclerView.setAdapter(mainAdapter);
     }
@@ -867,9 +870,13 @@ public class MainDashboard extends AppCompatActivity {
     }
 
     private void init() {
-        progressBar = findViewById(R.id.progressBar);
+        providers = Arrays.asList(new AuthUI.IdpConfig.GoogleBuilder().build(),
+                new AuthUI.IdpConfig.EmailBuilder().build());
+
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        progressBar = findViewById(R.id.progressBar);
+
         drawerLayout = findViewById(R.id.drawerLayout);
         toolbar = findViewById(R.id.toolbar);
         navigationView = findViewById(R.id.navigationView);

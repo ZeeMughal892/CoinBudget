@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="250dp"
     android:layout_height="wrap_content"
     android:layout_gravity="center">
@@ -17,19 +18,21 @@
             android:id="@+id/txtLookup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="25dp"
             android:fontFamily="@font/catamaran"
-            android:text="@string/income_overview"
+            android:text="Estimated Overview"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8sp"
             android:gravity="center"
-            android:text="@string/please_enter_your_income_amount_frequency_and_description"
-            android:textSize="12sp" />
+            android:text="Please enter expense amount and description"
+            android:textSize="12sp"
+            tools:ignore="HardcodedText" />
 
         <EditText
             android:id="@+id/ed_EstimatedAmount"

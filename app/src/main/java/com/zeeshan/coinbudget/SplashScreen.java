@@ -33,11 +33,9 @@ public class SplashScreen extends AppCompatActivity {
         txtTitle.startAnimation(animation);
         imgLogo.startAnimation(animation);
 
-        if (firebaseUser != null) {
-            intent = new Intent(SplashScreen.this, MainDashboard.class);
-        } else {
-            intent = new Intent(SplashScreen.this, Login.class);
-        }
+
+        intent = new Intent(SplashScreen.this, SignIn.class);
+
         Thread timer = new Thread() {
             public void run() {
                 try {
