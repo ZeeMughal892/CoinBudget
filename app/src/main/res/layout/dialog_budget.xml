@@ -9,15 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
+        android:paddingBottom="10dp"
         android:background="@drawable/bg_relative_layout"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="10dp">
+        >
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="25dp"
             android:layout_marginBottom="8dp"
             android:fontFamily="@font/catamaran"
             android:text="@string/budget_overview"
@@ -97,7 +98,6 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/catamaran"
                 android:gravity="right"
-                android:lineSpacingMultiplier="1.5"
                 android:text="@string/total_recurring_expenses"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -127,7 +127,6 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/catamaran"
                 android:gravity="right"
-                android:lineSpacingMultiplier="1.5"
                 android:text="@string/total_estimated_expenses"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -154,7 +153,7 @@
 
             <TextView
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:fontFamily="@font/catamaran"
                 android:gravity="right"

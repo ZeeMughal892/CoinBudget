@@ -22,8 +22,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.camera2.TotalCaptureResult;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,15 +62,19 @@ import com.zeeshan.coinbudget.model.CountryModel;
 import com.zeeshan.coinbudget.model.ExpenseOverview;
 import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Savings;
+import com.zeeshan.coinbudget.model.Transactions;
 import com.zeeshan.coinbudget.model.User;
 import com.zeeshan.coinbudget.utils.AlarmReceiver;
 import com.zeeshan.coinbudget.utils.AppUtils;
 
 import org.w3c.dom.Text;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -77,7 +83,7 @@ import retrofit2.Response;
 
 public class MainDashboard extends AppCompatActivity {
 
-    DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount;
+    DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount, databaseTransaction;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
     DrawerLayout drawerLayout;
@@ -91,7 +97,6 @@ public class MainDashboard extends AppCompatActivity {
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
 
-    List<AuthUI.IdpConfig> providers;
 
     Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogBank,
             dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
@@ -107,7 +112,6 @@ public class MainDashboard extends AppCompatActivity {
 
     Spinner spinnerFrequency, spinnerCurrency, spinnerFrequencyIncome;
 
-    private static final int MY_REQUEST_CODE = 7117;
     String format;
     ProgressBar progressBarCurrency, progressBarBudget;
     private DatePickerDialog datePickerDialog;
@@ -118,6 +122,9 @@ public class MainDashboard extends AppCompatActivity {
     private int totalIncome, totalRecurring, totalEstimated = 0;
     private Double totalAccountBalance, totalRemainingBudget, totalExtraIncome = 0.00;
 
+    private List<Income> incomeList;
+    private List<Transactions> transactionsList;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,9 +132,10 @@ public class MainDashboard extends AppCompatActivity {
         setContentView(R.layout.activity_main_dashboard);
         init();
 
-
         setUpToolbar();
         loadDashboard();
+
+
         progressBar.setVisibility(View.GONE);
 
         dialogFrequency = new Dialog(MainDashboard.this);
@@ -417,7 +425,7 @@ public class MainDashboard extends AppCompatActivity {
                                 AuthUI.getInstance().signOut(MainDashboard.this).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        startActivity(new Intent(MainDashboard.this,SignIn.class));
+                                        startActivity(new Intent(MainDashboard.this, SignIn.class));
                                     }
                                 });
 
@@ -498,6 +506,7 @@ public class MainDashboard extends AppCompatActivity {
                                 }
                                 txtAccountBalance.setText(String.valueOf(totalAccountBalance));
                             }
+
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
@@ -558,6 +567,7 @@ public class MainDashboard extends AppCompatActivity {
                                 }
                                 txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
                             }
+
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
@@ -576,6 +586,7 @@ public class MainDashboard extends AppCompatActivity {
                                 }
                                 txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
                             }
+
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
@@ -786,7 +797,6 @@ public class MainDashboard extends AppCompatActivity {
         });
     }
 
-
     private void hideItem() {
         navigationView = findViewById(R.id.navigationView);
         Menu nav_Menu = navigationView.getMenu();
@@ -816,13 +826,85 @@ public class MainDashboard extends AppCompatActivity {
                     hideItem();
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+        databaseIncome.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                incomeList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Income income = snapshot.getValue(Income.class);
+                    if (firebaseUser.getUid().equals(income.getUserID())) {
+                        incomeList.add(income);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        databaseTransaction.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                transactionsList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Transactions transactions = snapshot.getValue(Transactions.class);
+                    if (firebaseUser.getUid().equals(transactions.getUserID())) {
+                        transactionsList.add(transactions);
+                    }
+                }
+                try {
+                    loadRecycler();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+    private void loadRecycler() throws ParseException {
+        int totalTransaction = 0;
+        for (int i = 0; i < transactionsList.size(); i++) {
+            totalTransaction += Integer.parseInt(transactionsList.get(i).getTransactionAmount());
+        }
+
+        for (int i=0;i<incomeList.size();i++) {
+
+            ExpenseOverview expenseOverview = new ExpenseOverview();
+            Date today = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+            Date nextDay = sdf.parse(incomeList.get(i).getDateOfIncome());
+
+            long dayCount = daysBetweenTwoDates(today, nextDay);
+
+            String totalRemainingAmount = String.valueOf(Double.parseDouble(incomeList.get(i).getIncomeAmount()) - Double.parseDouble(String.valueOf(totalTransaction)));
+            String averageExpense = String.valueOf(totalTransaction / transactionsList.size());
+
+            expenseOverview.setRemainingAmount( "$ " + totalRemainingAmount);
+            expenseOverview.setRemainingDays(String.valueOf(dayCount)+ " Days");
+            expenseOverview.setAverageExpenseAmount("$ " + averageExpense);
+            expenseOverviewList.add(expenseOverview);
+        }
         MainAdapter mainAdapter = new MainAdapter(expenseOverviewList);
         recyclerView.setAdapter(mainAdapter);
+    }
+
+    public long daysBetweenTwoDates(Date dtOne, Date dtTwo) {
+        long difference = (dtOne.getTime() - dtTwo.getTime()) / 86400000;
+        return Math.abs(difference);
+
     }
 
     private void setUpToolbar() {
@@ -832,10 +914,8 @@ public class MainDashboard extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(false);
-
         actionBarDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_sort_black_24dp);
         actionBarDrawerToggle.syncState();
-
         actionBarDrawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -870,13 +950,12 @@ public class MainDashboard extends AppCompatActivity {
     }
 
     private void init() {
-        providers = Arrays.asList(new AuthUI.IdpConfig.GoogleBuilder().build(),
-                new AuthUI.IdpConfig.EmailBuilder().build());
-
+        incomeList = new ArrayList<>();
+        transactionsList=new ArrayList<>();
+        databaseTransaction = FirebaseDatabase.getInstance().getReference("Transaction");
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         progressBar = findViewById(R.id.progressBar);
-
         drawerLayout = findViewById(R.id.drawerLayout);
         toolbar = findViewById(R.id.toolbar);
         navigationView = findViewById(R.id.navigationView);

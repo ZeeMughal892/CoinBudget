@@ -98,7 +98,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
         init();
         setUpToolbar();
         loadEstimatedExpense();
-        bottomNavigationView.setSelectedItemId(R.id.income);
+        bottomNavigationView.setSelectedItemId(R.id.expenses);
         dialogBank = new Dialog(EstimatedExpensesDetails.this);
         dialogBank.setContentView(R.layout.dialog_bank);
         dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));

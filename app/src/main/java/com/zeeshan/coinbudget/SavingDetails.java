@@ -99,7 +99,6 @@ public class SavingDetails extends AppCompatActivity {
         init();
         setUpToolbar();
         loadSavings();
-        bottomNavigationView.setSelectedItemId(R.id.savings);
         dialogBank = new Dialog(SavingDetails.this);
         dialogBank.setContentView(R.layout.dialog_bank);
         dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -120,6 +119,7 @@ public class SavingDetails extends AppCompatActivity {
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        bottomNavigationView.setSelectedItemId(R.id.savings);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

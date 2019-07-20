@@ -115,24 +115,22 @@ public class ExtraIncome extends AppCompatActivity {
         dialogSavings = new Dialog(ExtraIncome.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        bottomNavigationView.setSelectedItemId(R.id.income);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.bank:
-
                         txtAccountBalance = dialogBank.findViewById(R.id.txtAccountBalance);
                         txtOR = dialogBank.findViewById(R.id.txtOR);
-
                         edAmountBank = dialogBank.findViewById(R.id.ed_AmountBank);
                         edDateBank = dialogBank.findViewById(R.id.ed_DateBank);
-
                         btnSelectDateBank = dialogBank.findViewById(R.id.btnSelectBankDate);
                         btnAddBankAmount = dialogBank.findViewById(R.id.btnAddBankAmount);
                         btnAddBankAccount = dialogBank.findViewById(R.id.btnAddBankAccount);
                         btnAddLoanAccount = dialogBank.findViewById(R.id.btnAddLoanAccount);
                         btnAddAdditionalAccount = dialogBank.findViewById(R.id.btnAddAdditionalAccount);
-
                         if (!isPremium) {
                             txtOR.setVisibility(View.GONE);
                             btnAddLoanAccount.setVisibility(View.GONE);

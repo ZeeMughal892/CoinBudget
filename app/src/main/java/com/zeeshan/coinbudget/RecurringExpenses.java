@@ -117,6 +117,8 @@ public class RecurringExpenses extends AppCompatActivity {
         dialogSavings = new Dialog(RecurringExpenses.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        bottomNavigationView.setSelectedItemId(R.id.expenses);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

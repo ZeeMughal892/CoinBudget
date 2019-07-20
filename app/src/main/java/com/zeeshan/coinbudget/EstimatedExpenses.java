@@ -120,6 +120,8 @@ public class EstimatedExpenses extends AppCompatActivity {
         dialogSavings = new Dialog(EstimatedExpenses.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        bottomNavigationView.setSelectedItemId(R.id.expenses);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -278,7 +280,8 @@ public class EstimatedExpenses extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+
+                                txtTotalRecurringExpenseBudget.setText(String.valueOf(Double.parseDouble(String.valueOf(totalRecurring))));
 
                                 totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
                                         (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
