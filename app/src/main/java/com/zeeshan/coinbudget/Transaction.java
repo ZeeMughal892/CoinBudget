@@ -1,20 +1,34 @@
 package com.zeeshan.coinbudget;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,7 +37,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.zeeshan.coinbudget.adapter.LookupAdapter;
+import com.zeeshan.coinbudget.model.BankAccount;
+import com.zeeshan.coinbudget.model.ExpenseOverview;
+import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Lookup;
+import com.zeeshan.coinbudget.model.Savings;
 import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
@@ -41,7 +59,35 @@ public class Transaction extends AppCompatActivity {
     ProgressBar progressBar;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    Boolean isPremium;
+    DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount;
+    NavigationView navigationView;
+    RecyclerView recyclerView;
+    List<ExpenseOverview> expenseOverviewList;
+    FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
+    ConstraintLayout messageContainer;
+
+    Dialog  dialogBank, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
+
+    Button btnRecurringExpense, btnEstimatedExpense, btnSavingDetails, btnAddSavings, btnIncomeDetails,
+             btnSelectGoalDate, btnSelectDateBank,btnAddIncome, btnSelectDateIncome, btnAddBankAmount, btnAddBankAccount, btnAddLoanAccount, btnAddAdditionalAccount;
+
+    TextView txtTotalIncomeBudget, txtTotalRecurringExpenseBudget, txtTotalEstimatedExpenseBudget, txtTotalRemainingAmountBudget, txtAccountBalance, txtOR;
+
+    EditText edEmail,  edPassword, edAmountBank, edDateBank,
+            edIncomeAmount, edIncomeDescription, edIncomeDate, edSavingDate, edSavingAmount, edSavingTitle;
+
+    Spinner  spinnerFrequencyIncome;
+
+    String format;
+    ProgressBar progressBarCurrency, progressBarBudget;
+    private DatePickerDialog datePickerDialog;
+
+    private int hourAlarm, minuteAlarm;
+    private String fullName, userName, pin, currency, payFrequency;
+    private Boolean isPremium = false;
+    private int totalIncome, totalRecurring, totalEstimated = 0;
+    private Double totalAccountBalance, totalRemainingBudget,totalExtraIncome = 0.00;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,24 +97,316 @@ public class Transaction extends AppCompatActivity {
         init();
         setUpToolbar();
         progressBar.setVisibility(View.VISIBLE);
+        dialogBank = new Dialog(Transaction.this);
+        dialogBank.setContentView(R.layout.dialog_bank);
+        dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialogBudget = new Dialog(Transaction.this);
+        dialogBudget.setContentView(R.layout.dialog_budget);
+        dialogBudget.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialogIncome = new Dialog(Transaction.this);
+        dialogIncome.setContentView(R.layout.dialog_income_overview);
+        dialogIncome.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialogExpenses = new Dialog(Transaction.this);
+        dialogExpenses.setContentView(R.layout.dialog_expenses_overview);
+        dialogExpenses.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialogSavings = new Dialog(Transaction.this);
+        dialogSavings.setContentView(R.layout.dialog_savings);
+        dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.bank:
-                        startActivity(new Intent(getApplicationContext(), Bank.class));
+
+                        txtAccountBalance = dialogBank.findViewById(R.id.txtAccountBalance);
+                        txtOR = dialogBank.findViewById(R.id.txtOR);
+
+                        edAmountBank = dialogBank.findViewById(R.id.ed_AmountBank);
+                        edDateBank = dialogBank.findViewById(R.id.ed_DateBank);
+
+                        btnSelectDateBank = dialogBank.findViewById(R.id.btnSelectBankDate);
+                        btnAddBankAmount = dialogBank.findViewById(R.id.btnAddBankAmount);
+                        btnAddBankAccount = dialogBank.findViewById(R.id.btnAddBankAccount);
+                        btnAddLoanAccount = dialogBank.findViewById(R.id.btnAddLoanAccount);
+                        btnAddAdditionalAccount = dialogBank.findViewById(R.id.btnAddAdditionalAccount);
+
+                        if (!isPremium) {
+                            txtOR.setVisibility(View.GONE);
+                            btnAddLoanAccount.setVisibility(View.GONE);
+                            btnAddBankAccount.setVisibility(View.GONE);
+                            btnAddAdditionalAccount.setVisibility(View.GONE);
+                        }
+                        databaseBankAccount.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalAccountBalance=0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    BankAccount bankAccount = snapshot.getValue(BankAccount.class);
+                                    if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
+                                        totalAccountBalance += Double.parseDouble(bankAccount.getAmount());
+                                    }
+                                }
+                                if(totalAccountBalance == null){
+                                    txtAccountBalance.setText("0.00");
+                                }
+                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        datePickerDialog = new DatePickerDialog(Transaction.this);
+                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = day + "/" + month + "/" + year;
+                                edDateBank.setText(Date);
+                            }
+                        });
+
+                        btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                datePickerDialog.show();
+                            }
+                        });
+
+                        btnAddBankAmount.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String accountId = databaseBankAccount.push().getKey();
+                                String userId = firebaseUser.getUid();
+                                String amount = edAmountBank.getText().toString().trim();
+                                String date = edDateBank.getText().toString().trim();
+                                BankAccount bankAccount = new BankAccount(accountId, userId, amount, date);
+                                databaseBankAccount.child(accountId).setValue(bankAccount);
+                                Toast.makeText(Transaction.this, "Amount Added", Toast.LENGTH_SHORT).show();
+                                edAmountBank.setText(null);
+                                edDateBank.setText(null);
+                                dialogBank.dismiss();
+                            }
+                        });
+                        dialogBank.show();
                         break;
                     case R.id.budget:
-                        startActivity(new Intent(getApplicationContext(), DailyEntryDetail.class));
+                        txtTotalIncomeBudget = dialogBudget.findViewById(R.id.txtTotalIncomeBudget);
+                        txtTotalEstimatedExpenseBudget = dialogBudget.findViewById(R.id.txtEstimatedExpensesBudget);
+                        txtTotalRecurringExpenseBudget = dialogBudget.findViewById(R.id.txtRecurringExpensesBudget);
+                        txtTotalRemainingAmountBudget = dialogBudget.findViewById(R.id.txtRemainingAmountBudget);
+                        progressBarBudget = dialogBudget.findViewById(R.id.progress_barBudget);
+
+                        databaseEstimatedExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalEstimated = 0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.EstimatedExpenses estimatedExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.EstimatedExpenses.class);
+                                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalEstimated += Integer.parseInt(estimatedExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalIncome = 0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    if (income.getUserID().equals(firebaseUser.getUid())) {
+                                        totalIncome += Integer.parseInt(income.getIncomeAmount());
+                                    }
+                                }
+                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseExtraIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalExtraIncome = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
+                                    if (extraIncome.getUserID().equals(firebaseUser.getUid())) {
+                                        totalExtraIncome += Integer.parseInt(extraIncome.getExtraAmount());
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseRecurringExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalRecurring = 0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.RecurringExpenses recurringExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.RecurringExpenses.class);
+                                    if (recurringExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+
+                                totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) - (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) + Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
+                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        txtTotalRemainingAmountBudget.setText(null);
+                        txtTotalRecurringExpenseBudget.setText(null);
+                        txtTotalEstimatedExpenseBudget.setText(null);
+                        txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
-                        startActivity(new Intent(getApplicationContext(), EstimatedExpensesDetails.class));
+                        edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
+                        edIncomeDate = dialogIncome.findViewById(R.id.ed_DateIncome);
+                        edIncomeDescription = dialogIncome.findViewById(R.id.ed_descIncome);
+                        spinnerFrequencyIncome = dialogIncome.findViewById(R.id.spinnerIncome);
+
+                        btnIncomeDetails = dialogIncome.findViewById(R.id.btnIncomeDetails);
+                        btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
+                        btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
+
+                        datePickerDialog = new DatePickerDialog(Transaction.this);
+                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = day + "/" + month + "/" + year;
+                                edIncomeDate.setText(Date);
+                            }
+                        });
+                        btnSelectDateIncome.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                datePickerDialog.show();
+                            }
+                        });
+                        btnIncomeDetails.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(Transaction.this, IncomeDetails.class));
+                            }
+                        });
+                        btnAddIncome.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String incomeId = databaseIncome.push().getKey();
+                                String userId = firebaseUser.getUid();
+                                String incomeAmount = edIncomeAmount.getText().toString().trim();
+                                String date = edIncomeDate.getText().toString().trim();
+                                String desc = edIncomeDescription.getText().toString().trim();
+                                String frequency = spinnerFrequencyIncome.getSelectedItem().toString().trim();
+                                Income income = new Income(incomeId, userId, incomeAmount, frequency, date, desc);
+                                databaseIncome.child(incomeId).setValue(income);
+                                Toast.makeText(view.getContext(), "Income Added Successfully", Toast.LENGTH_SHORT).show();
+                                edIncomeAmount.setText(null);
+                                edIncomeDate.setText(null);
+                                edIncomeDescription.setText(null);
+                                dialogIncome.dismiss();
+                            }
+                        });
+                        dialogIncome.show();
                         break;
                     case R.id.expenses:
-                        startActivity(new Intent(getApplicationContext(), RecurringExpensesDetails.class));
+                        btnRecurringExpense = dialogExpenses.findViewById(R.id.btnRecurringExpense);
+                        btnEstimatedExpense = dialogExpenses.findViewById(R.id.btnEstimatedExpense);
+
+                        btnRecurringExpense.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(Transaction.this, RecurringExpenses.class));
+                                dialogExpenses.dismiss();
+                            }
+                        });
+                        btnEstimatedExpense.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(Transaction.this, EstimatedExpenses.class));
+                                dialogExpenses.dismiss();
+                            }
+                        });
+                        dialogExpenses.show();
                         break;
                     case R.id.savings:
-                        startActivity(new Intent(getApplicationContext(), SavingDetails.class));
+                        edSavingTitle = dialogSavings.findViewById(R.id.ed_titleSaving);
+                        edSavingDate = dialogSavings.findViewById(R.id.ed_DateSaving);
+                        edSavingAmount = dialogSavings.findViewById(R.id.ed_SavingAmount);
+
+                        btnSelectGoalDate = dialogSavings.findViewById(R.id.btnSelectGoalDate);
+                        btnSavingDetails = dialogSavings.findViewById(R.id.btnSavingDetails);
+                        btnAddSavings = dialogSavings.findViewById(R.id.btnAddSavings);
+
+                        datePickerDialog = new DatePickerDialog(Transaction.this);
+                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = day + "/" + month + "/" + year;
+                                edSavingDate.setText(Date);
+                            }
+                        });
+                        btnSelectGoalDate.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                datePickerDialog.show();
+                            }
+                        });
+                        btnSavingDetails.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(Transaction.this, SavingDetails.class));
+                            }
+                        });
+
+                        btnAddSavings.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String savingId = databaseSavings.push().getKey();
+                                String userId = firebaseUser.getUid();
+                                String title = edSavingTitle.getText().toString().trim();
+                                String amount = edSavingAmount.getText().toString().trim();
+                                String date = edSavingDate.getText().toString().trim();
+                                com.zeeshan.coinbudget.model.Savings savings = new Savings(savingId, userId, title, amount, date);
+                                databaseSavings.child(savingId).setValue(savings);
+                                Toast.makeText(Transaction.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
+                                edSavingTitle.setText(null);
+                                edSavingAmount.setText(null);
+                                edSavingDate.setText(null);
+                                dialogSavings.dismiss();
+                            }
+                        });
+
+                        dialogSavings.show();
                         break;
                 }
                 return true;
@@ -155,8 +493,22 @@ public class Transaction extends AppCompatActivity {
         lookupList = new ArrayList<>();
         databaseLookup = FirebaseDatabase.getInstance().getReference("Lookups");
         databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
-        progressBar = findViewById(R.id.progressBarRecurringExpenses);
+        progressBar = findViewById(R.id.progress_barTransaction
+        );
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        navigationView = findViewById(R.id.navigationView);
+        recyclerView = findViewById(R.id.recyclerViewMain);
+        expenseOverviewList = new ArrayList<>();
+        btnAddExtraIncome = findViewById(R.id.btnAddExtraIncome);
+        btnAddNewTransaction = findViewById(R.id.btnAddNewTransaction);
+        messageContainer = findViewById(R.id.messageContainer);
+        databaseUser = FirebaseDatabase.getInstance().getReference("Users");
+        databaseBankAccount = FirebaseDatabase.getInstance().getReference("Bank Account");
+        databaseSavings = FirebaseDatabase.getInstance().getReference("Saving Goals");
+        databaseIncome = FirebaseDatabase.getInstance().getReference("Income");
+        databaseExtraIncome = FirebaseDatabase.getInstance().getReference("Extra Income");
+        databaseEstimatedExpense = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
+        databaseRecurringExpense = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
     }
 }

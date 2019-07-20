@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_gravity="center"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:text="@string/saving_details"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp" />
@@ -34,8 +34,6 @@
         layout="@layout/table_saving_detail_head"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.473"
         app:layout_constraintStart_toStartOf="parent"
@@ -62,7 +60,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_savings" />
+        app:menu="@menu/menu_bottom_navigation" />
 
     <ProgressBar
         android:id="@+id/progressBarSavingDetails"

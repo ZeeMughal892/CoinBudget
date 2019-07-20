@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,19 +141,26 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                         String notes = ed_Notes.getText().toString().trim();
                         String date = ed_Date.getText().toString().trim();
 
-                        if(mode.equals("Extra Income")){
-                            ExtraIncome extraIncome = new ExtraIncome(modeID, userID, source, amount, notes, false, date);
-                            databaseReference.child(modeID).setValue(extraIncome);
+                        if (TextUtils.isEmpty(amount)) {
+                            Toast.makeText(view.getContext(), "Please enter amount", Toast.LENGTH_SHORT).show();
+                        } else if (TextUtils.isEmpty(notes)) {
+                            Toast.makeText(view.getContext(), "Please enter notes", Toast.LENGTH_SHORT).show();
+                        } else if (TextUtils.isEmpty(date)) {
+                            Toast.makeText(view.getContext(), "Please select date", Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (mode.equals("Extra Income")) {
+                                ExtraIncome extraIncome = new ExtraIncome(modeID, userID, source, amount, notes, false, date);
+                                databaseReference.child(modeID).setValue(extraIncome);
+                            } else {
+                                Transactions transactions = new Transactions(modeID, userID, source, amount, notes, false, date);
+                                databaseReference.child(modeID).setValue(transactions);
+                            }
+                            Toast.makeText(view.getContext(), "Information Added Successfully", Toast.LENGTH_SHORT).show();
+                            ed_Amount.setText(null);
+                            ed_Date.setText(null);
+                            ed_Notes.setText(null);
+                            dialog.dismiss();
                         }
-                        else {
-                            Transactions transactions = new Transactions(modeID,userID,source,amount,notes,false,date);
-                            databaseReference.child(modeID).setValue(transactions);
-                        }
-                        Toast.makeText(view.getContext(), "Information Added Successfully", Toast.LENGTH_SHORT).show();
-                        ed_Amount.setText(null);
-                        ed_Date.setText(null);
-                        ed_Notes.setText(null);
-                        dialog.dismiss();
                     }
                 });
 

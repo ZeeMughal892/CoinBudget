@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:layout_marginBottom="8dp"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:text="@string/reminder"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -84,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
                 android:background="@drawable/bg_gradient"
-                android:fontFamily="@font/aclonica"
+                android:fontFamily="@font/catamaran"
                 android:text="@string/set_reminder"
                 android:textAllCaps="false"
                 android:textColor="@color/colorWhite"
@@ -98,8 +98,7 @@
         android:layout_height="50dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/bg_round"
-        android:src="@drawable/ic_add_alert_black_24dp" />
+        android:src="@mipmap/ic_reminder" />
 
 
 </RelativeLayout>

@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -96,24 +97,30 @@ public class EstimatedExpenseAdapter extends RecyclerView.Adapter<EstimatedExpen
                         String source = txtLookup.getText().toString();
                         String amount = ed_AmountEstimated.getText().toString().trim();
                         String description = ed_DescriptionEstimated.getText().toString().trim();
-
-                        EstimatedExpenses estimatedExpenses = new EstimatedExpenses(expenseId,userID,source,amount,description);
-                        databaseReference.child(expenseId).setValue(estimatedExpenses);
-
-                        Toast.makeText(view.getContext(), "Expense Added Successfully", Toast.LENGTH_SHORT).show();
-                        ed_AmountEstimated.setText(null);
-                        dialogEstimated.dismiss();
+                        if (TextUtils.isEmpty(amount)) {
+                            Toast.makeText(view.getContext(), "Please enter amount", Toast.LENGTH_SHORT).show();
+                        } else if (TextUtils.isEmpty(description)) {
+                            Toast.makeText(view.getContext(), "Please enter description", Toast.LENGTH_SHORT).show();
+                        } else {
+                            EstimatedExpenses estimatedExpenses = new EstimatedExpenses(expenseId, userID, source, amount, description);
+                            databaseReference.child(expenseId).setValue(estimatedExpenses);
+                            Toast.makeText(view.getContext(), "Expense Added Successfully", Toast.LENGTH_SHORT).show();
+                            ed_AmountEstimated.setText(null);
+                            dialogEstimated.dismiss();
+                        }
                     }
                 });
 
-                txtLookup.setText(lookupList.get(myViewHolder.getAdapterPosition()).getLookUpItemName());
+                txtLookup.setText(lookupList.get(myViewHolder.getAdapterPosition()).
+
+                        getLookUpItemName());
 
                 Picasso.get()
-                        .load(lookupList.get(myViewHolder.getAdapterPosition()).getItemImage())
-                        .fit()
-                        .centerInside()
-                        .placeholder(R.drawable.ic_coinbudget)
-                        .into(imgIconDialog);
+                        .load(lookupList.get(myViewHolder.getAdapterPosition()). getItemImage())
+                        . fit()
+                        . centerInside()
+                        . placeholder(R.drawable.ic_coinbudget)
+                        . into(imgIconDialog);
                 dialogEstimated.show();
             }
         });

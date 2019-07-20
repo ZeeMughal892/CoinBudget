@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_gravity="center"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:text="@string/details"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp" />
@@ -34,8 +34,6 @@
         layout="@layout/table_estimated_head"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.473"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,9 +43,6 @@
         android:id="@+id/recyclerViewEstimatedDetails"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="@+id/include"
         app:layout_constraintStart_toStartOf="@+id/include"
@@ -61,7 +56,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
-        android:fontFamily="@font/aclonica"
+        android:fontFamily="@font/catamaran"
         android:text="@string/total_estimated_expense"
         android:textSize="14sp"
         android:textStyle="bold"
@@ -77,7 +72,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:fontFamily="@font/aclonica"
+        android:fontFamily="@font/catamaran"
         android:text="@string/_0_00"
         android:textColor="@color/colorPrimary"
         android:textSize="18sp"
@@ -98,7 +93,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_income" />
+        app:menu="@menu/menu_bottom_navigation" />
 
     <ProgressBar
         android:id="@+id/progressBarOrder"

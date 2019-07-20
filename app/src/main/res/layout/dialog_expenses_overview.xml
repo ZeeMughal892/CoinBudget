@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:layout_marginBottom="8dp"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:gravity="center"
             android:text="@string/expenses_overview"
             android:textSize="14sp"
@@ -96,8 +96,8 @@
     </LinearLayout>
 
     <ImageView
-        android:layout_width="65dp"
-        android:layout_height="65dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:src="@mipmap/ic_expense" />

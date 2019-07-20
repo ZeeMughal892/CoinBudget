@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_gravity="center"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:text="@string/details"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp"
@@ -36,8 +36,6 @@
         layout="@layout/table_daily_entry_detail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.473"
         app:layout_constraintStart_toStartOf="parent"
@@ -60,7 +58,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
-        android:fontFamily="@font/aclonica"
+        android:fontFamily="@font/catamaran"
         android:text="@string/total"
         android:textSize="14sp"
         android:textStyle="bold"
@@ -75,7 +73,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:fontFamily="@font/aclonica"
+        android:fontFamily="@font/catamaran"
         android:text="@string/_0_00"
         android:textColor="@color/colorPrimary"
         android:textSize="18sp"
@@ -96,7 +94,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_budget" />
+        app:menu="@menu/menu_bottom_navigation" />
 
     <ProgressBar
         android:id="@+id/progressBarDailyEntry"

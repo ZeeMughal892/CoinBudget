@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -120,13 +121,19 @@ public class RecurringExpenseAdapter extends RecyclerView.Adapter<RecurringExpen
                         String description = ed_Description.getText().toString().trim();
                         String frequency = spinnerRecurring.getSelectedItem().toString().trim();
                         String date = ed_DateRecurring.getText().toString().trim();
-
-                        RecurringExpenses recurringExpenses = new RecurringExpenses(expenseId, userID, source, amount, frequency, date, description);
-                        databaseReference.child(expenseId).setValue(recurringExpenses);
-
-                        Toast.makeText(view.getContext(), "Expense Added Successfully", Toast.LENGTH_SHORT).show();
-                        ed_AmountRecurring.setText(null);
-                        dialogRecurring.dismiss();
+                        if (TextUtils.isEmpty(amount)) {
+                            Toast.makeText(view.getContext(), "Please enter amount", Toast.LENGTH_SHORT).show();
+                        } else if (TextUtils.isEmpty(description)) {
+                            Toast.makeText(view.getContext(), "Please enter description", Toast.LENGTH_SHORT).show();
+                        } else if (TextUtils.isEmpty(date)) {
+                            Toast.makeText(view.getContext(), "Please select date", Toast.LENGTH_SHORT).show();
+                        } else {
+                            RecurringExpenses recurringExpenses = new RecurringExpenses(expenseId, userID, source, amount, frequency, date, description);
+                            databaseReference.child(expenseId).setValue(recurringExpenses);
+                            Toast.makeText(view.getContext(), "Expense Added Successfully", Toast.LENGTH_SHORT).show();
+                            ed_AmountRecurring.setText(null);
+                            dialogRecurring.dismiss();
+                        }
                     }
                 });
 

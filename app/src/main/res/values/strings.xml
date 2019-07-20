@@ -100,6 +100,17 @@
     <string name="or">OR</string>
     <string name="check_income_details">Check Income Details</string>
     <string name="income_details">Income Details</string>
+    <string name="amount_to_save">Amount to Save</string>
+    <string name="average_monthly_savings_required">Average Monthly Savings Required</string>
+    <string name="amount_saved_to_date">Amount Saved To-Date</string>
+    <string name="remaining_amount_due">Remaining Amount Due</string>
+    <string name="summary">Summary</string>
+    <string name="total_income_">Total Income =</string>
+    <string name="please_enter_details_of_your_bank_account">Please enter details of your bank account</string>
+    <string name="add_bank_account">Add Bank Account</string>
+    <string name="add_loan_account">Add Loan Account</string>
+    <string name="add_additional_account">Add Additional Account</string>
+    <string name="account_balance">Account Balance :</string>
 
     <string-array name="Frequency">
         <item>Monthly</item>

@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:text="@string/income_overview"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
                 android:background="@drawable/bg_gradient"
-                android:fontFamily="@font/aclonica"
+                android:fontFamily="@font/catamaran"
                 android:text="@string/add"
                 android:textAllCaps="false"
                 android:textColor="@color/colorWhite"

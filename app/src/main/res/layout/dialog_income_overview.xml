@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             android:text="@string/income_overview"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:text="@string/or"
             android:layout_marginBottom="8dp"
-            android:fontFamily="@font/aclonica"
+            android:fontFamily="@font/catamaran"
             />
 
         <TextView
@@ -118,7 +118,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
                 android:background="@drawable/bg_gradient"
-                android:fontFamily="@font/aclonica"
+                android:fontFamily="@font/catamaran"
                 android:text="@string/add"
                 android:textAllCaps="false"
                 android:textColor="@color/colorWhite"
@@ -133,7 +133,7 @@
         android:layout_height="50dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_coinbudget" />
+        android:src="@mipmap/ic_income" />
 
 
 </RelativeLayout>

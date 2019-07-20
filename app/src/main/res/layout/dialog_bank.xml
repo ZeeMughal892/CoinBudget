@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/bg_relative_layout"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/catamaran"
+            android:text="@string/bank_overview"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16sp"
+            android:gravity="center"
+            android:text="@string/please_enter_details_of_your_bank_account"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="0.9"
+                android:enabled="false"
+                android:gravity="start|center"
+                android:hint="@string/date"
+                android:text="@string/account_balance"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/txtAccountBalance"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="1.1"
+                android:gravity="start|center"
+                android:text="@string/_0_00"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/ed_AmountBank"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_dialog_edit_text"
+            android:hint="@string/amount"
+            android:inputType="numberDecimal"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/ed_DateBank"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_dialog_edit_text"
+                android:enabled="false"
+                android:hint="@string/date"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btnSelectBankDate"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="0.5"
+                android:background="@drawable/bg_gradient"
+                android:text="@string/select_date"
+                android:textAllCaps="false"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnAddBankAmount"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:background="@drawable/bg_gradient"
+                android:fontFamily="@font/catamaran"
+                android:text="@string/add"
+                android:textAllCaps="false"
+                android:textColor="@color/colorWhite"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtOR"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/catamaran"
+            android:text="@string/or" />
+
+
+        <Button
+            android:id="@+id/btnAddBankAccount"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/colorWhite"
+            android:drawableStart="@drawable/ic_add_circle_black_24dp"
+            android:drawablePadding="20dp"
+            android:text="@string/add_bank_account"
+            android:textAlignment="viewStart"
+            android:textColor="@color/colorPrimary" />
+
+        <Button
+            android:id="@+id/btnAddLoanAccount"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/colorWhite"
+            android:drawableStart="@drawable/ic_add_circle_black_24dp"
+            android:drawablePadding="20dp"
+            android:text="@string/add_loan_account"
+            android:textAlignment="viewStart"
+            android:textColor="@color/colorPrimary" />
+
+        <Button
+            android:id="@+id/btnAddAdditionalAccount"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/colorWhite"
+            android:drawableStart="@drawable/ic_add_circle_black_24dp"
+            android:drawablePadding="20dp"
+            android:text="@string/add_additional_account"
+            android:textAlignment="viewStart"
+            android:textColor="@color/colorPrimary" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imgLogoUser"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:src="@mipmap/ic_bank" />
+
+
+</RelativeLayout>
