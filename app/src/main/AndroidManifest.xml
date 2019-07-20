@@ -13,16 +13,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".EstimatedExpenses"></activity>
+        <activity android:name=".IncomeDetails"></activity>
+        <activity android:name=".EstimatedExpenses" />
         <activity android:name=".RecurringExpenses" />
         <activity android:name=".Transaction" />
         <activity android:name=".ExtraIncome" />
         <activity android:name=".EnterLookup" />
         <activity android:name=".Bank" />
         <activity android:name=".RecurringExpensesDetails" />
-        <activity android:name=".Savings" />
+        <activity android:name=".SavingDetails" />
         <activity android:name=".EstimatedExpensesDetails" />
-        <activity android:name=".Budget" />
+        <activity android:name=".DailyEntryDetail" />
         <activity
             android:name=".Register"
             android:screenOrientation="portrait" />

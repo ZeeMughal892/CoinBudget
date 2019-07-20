@@ -140,7 +140,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                         String notes = ed_Notes.getText().toString().trim();
                         String date = ed_Date.getText().toString().trim();
 
-                        if(mode.equals("Extra EstimatedExpensesDetails")){
+                        if(mode.equals("Extra Income")){
                             ExtraIncome extraIncome = new ExtraIncome(modeID, userID, source, amount, notes, false, date);
                             databaseReference.child(modeID).setValue(extraIncome);
                         }
@@ -149,6 +149,9 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                             databaseReference.child(modeID).setValue(transactions);
                         }
                         Toast.makeText(view.getContext(), "Information Added Successfully", Toast.LENGTH_SHORT).show();
+                        ed_Amount.setText(null);
+                        ed_Date.setText(null);
+                        ed_Notes.setText(null);
                         dialog.dismiss();
                     }
                 });

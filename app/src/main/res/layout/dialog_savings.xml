@@ -18,18 +18,18 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:fontFamily="@font/aclonica"
-            android:text="@string/income_overview"
+            android:text="@string/savings_overview"
             android:textSize="14sp"
             android:textStyle="bold" />
 
 
         <Button
-            android:id="@+id/btnIncomeDetails"
+            android:id="@+id/btnSavingDetails"
             android:layout_width="match_parent"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             android:layout_marginTop="16dp"
             android:layout_height="35dp"
-            android:text="@string/check_income_details"
+            android:text="@string/check_savings_details"
             android:background="@drawable/bg_gradient"
             android:textColor="@color/colorWhite"/>
 
@@ -37,7 +37,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/or"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
+
             android:fontFamily="@font/aclonica"
             />
 
@@ -46,11 +47,21 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8sp"
             android:gravity="center"
-            android:text="@string/please_enter_your_income_amount_frequency_and_description"
+            android:text="@string/please_enter_details_of_your_saving_goal"
             android:textSize="12sp" />
 
         <EditText
-            android:id="@+id/ed_IncomeAmount"
+            android:id="@+id/ed_titleSaving"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_dialog_edit_text"
+            android:hint="@string/goal_title"
+            android:inputType="text"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/ed_SavingAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -58,23 +69,24 @@
             android:hint="@string/amount"
             android:inputType="numberDecimal"
             android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <EditText
-                android:id="@+id/ed_DateIncome"
+                android:id="@+id/ed_DateSaving"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_dialog_edit_text"
                 android:enabled="false"
-                android:hint="@string/date_of_income"
+                android:hint="@string/goal_date"
                 android:textSize="12sp" />
 
             <Button
-                android:id="@+id/btnSelectDateIncome"
+                android:id="@+id/btnSelectGoalDate"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_marginStart="8dp"
@@ -87,25 +99,6 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <Spinner
-            android:id="@+id/spinnerIncome"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:entries="@array/Frequency"
-            android:background="@drawable/bg_spinner"
-            android:textSize="12sp" />
-
-        <EditText
-            android:id="@+id/ed_descIncome"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@drawable/bg_dialog_edit_text"
-            android:hint="@string/description"
-            android:gravity="start|top"
-            android:paddingTop="10dp"
-            android:inputType="textMultiLine"
-            android:textSize="12sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -114,7 +107,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnAddIncome"
+                android:id="@+id/btnAddSavings"
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
                 android:background="@drawable/bg_gradient"

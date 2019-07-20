@@ -1,20 +1,29 @@
 package com.zeeshan.coinbudget.model;
 
 public class Savings {
+    private String savingId;
     private String userID;
     private String savingGoalTitle;
     private String amountToSave;
     private String goalDate;
-    private Boolean isPremium;
 
-    public Savings(){}
+    public Savings() {
+    }
 
-    public Savings(String userID, String savingGoalTitle, String amountToSave, String goalDate, Boolean isPremium) {
+    public Savings(String savingId, String userID, String savingGoalTitle, String amountToSave, String goalDate) {
+        this.savingId = savingId;
         this.userID = userID;
         this.savingGoalTitle = savingGoalTitle;
         this.amountToSave = amountToSave;
         this.goalDate = goalDate;
-        this.isPremium = isPremium;
+    }
+
+    public String getSavingId() {
+        return savingId;
+    }
+
+    public void setSavingId(String savingId) {
+        this.savingId = savingId;
     }
 
     public String getUserID() {
@@ -49,11 +58,4 @@ public class Savings {
         this.goalDate = goalDate;
     }
 
-    public Boolean getPremium() {
-        return isPremium;
-    }
-
-    public void setPremium(Boolean premium) {
-        isPremium = premium;
-    }
 }

@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,7 +23,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.zeeshan.coinbudget.adapter.RecurringDetailAdapter;
-import com.zeeshan.coinbudget.adapter.RecurringExpenseAdapter;
 import com.zeeshan.coinbudget.model.RecurringExpenses;
 
 import java.util.ArrayList;
@@ -59,7 +56,7 @@ public class RecurringExpensesDetails extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(), Bank.class));
                         break;
                     case R.id.budget:
-                        startActivity(new Intent(getApplicationContext(), Budget.class));
+                        startActivity(new Intent(getApplicationContext(), DailyEntryDetail.class));
                         break;
                     case R.id.income:
                         startActivity(new Intent(getApplicationContext(), EstimatedExpensesDetails.class));
@@ -68,7 +65,7 @@ public class RecurringExpensesDetails extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(), RecurringExpensesDetails.class));
                         break;
                     case R.id.savings:
-                        startActivity(new Intent(getApplicationContext(), Savings.class));
+                        startActivity(new Intent(getApplicationContext(), SavingDetails.class));
                         break;
                 }
                 return true;

@@ -30,7 +30,7 @@ public class Bank extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(), Bank.class));
                         break;
                     case R.id.budget:
-                        startActivity(new Intent(getApplicationContext(), Budget.class));
+                        startActivity(new Intent(getApplicationContext(), DailyEntryDetail.class));
                         break;
                     case R.id.income:
                         startActivity(new Intent(getApplicationContext(), EstimatedExpensesDetails.class));
@@ -39,7 +39,7 @@ public class Bank extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(), RecurringExpensesDetails.class));
                         break;
                     case R.id.savings:
-                        startActivity(new Intent(getApplicationContext(), Savings.class));
+                        startActivity(new Intent(getApplicationContext(), SavingDetails.class));
                         break;
                 }
                 return true;

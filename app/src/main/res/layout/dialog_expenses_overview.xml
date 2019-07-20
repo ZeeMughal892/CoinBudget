@@ -36,18 +36,17 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:gravity="center"
             android:orientation="horizontal">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardViewRecurringExpense"
-                android:layout_width="80dp"
-                android:layout_height="100dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:clickable="true"
-                android:focusable="true"
-                app:cardCornerRadius="5dp">
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -55,36 +54,26 @@
                     android:layout_gravity="center"
                     android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginLeft="15dp"
-                        android:layout_marginRight="15dp"
-                        android:contentDescription="@string/todo"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_expenses" />
 
-                    <TextView
+                    <Button
+                        android:id="@+id/btnRecurringExpense"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:padding="5dp"
+                        android:background="@color/colorGray"
                         android:text="@string/recurring_expenses"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textColor="@color/colorPrimary"
+                         />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardViewEstimatedExpenses"
-                android:layout_width="80dp"
-                android:layout_height="100dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:clickable="true"
-                android:focusable="true"
-                app:cardCornerRadius="5dp">
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -92,23 +81,14 @@
                     android:layout_gravity="center"
                     android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginLeft="15dp"
-                        android:layout_marginRight="15dp"
-                        android:contentDescription="@string/todo"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_expenses" />
-
-                    <TextView
+                    <Button
+                        android:id="@+id/btnEstimatedExpense"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:padding="5dp"
+                        android:background="@drawable/bg_gradient"
                         android:text="@string/estimated_expenses"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textColor="@color/colorGray"
+                         />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

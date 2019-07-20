@@ -27,7 +27,18 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/aclonica"
                 android:gravity="center"
-                android:text="@string/description"
+                android:text="@string/goal_title"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp"
+                tools:ignore="RtlHardcoded" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:fontFamily="@font/aclonica"
+                android:gravity="center"
+                android:text="@string/goal_date"
                 android:textColor="@color/colorPrimary"
                 android:textSize="12sp"
                 tools:ignore="RtlHardcoded" />

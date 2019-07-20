@@ -74,13 +74,13 @@
                 tools:ignore="RtlHardcoded" />
 
             <TextView
-                android:id="@+id/txtTotalIncome"
+                android:id="@+id/txtTotalIncomeBudget"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:fontFamily="@font/aclonica"
                 android:gravity="center"
-                android:text="@string/_250"
+                android:text="@string/_0_00"
                 android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -104,11 +104,11 @@
                 tools:ignore="RtlHardcoded" />
 
             <TextView
-                android:id="@+id/txtRecurringExpenses"
+                android:id="@+id/txtRecurringExpensesBudget"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/_250"
+                android:text="@string/_0_00"
                 android:fontFamily="@font/aclonica"
                 android:gravity="center"
                 android:textSize="12sp"
@@ -134,11 +134,11 @@
                 tools:ignore="RtlHardcoded" />
 
             <TextView
-                android:id="@+id/txtEstimatedExpenses"
+                android:id="@+id/txtEstimatedExpensesBudget"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/_250"
+                android:text="@string/_0_00"
                 android:fontFamily="@font/aclonica"
                 android:gravity="center"
                 android:textSize="12sp"
@@ -166,13 +166,13 @@
                 tools:ignore="RtlHardcoded" />
 
             <TextView
-                android:id="@+id/txtRemainingAmount"
+                android:id="@+id/txtRemainingAmountBudget"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:fontFamily="@font/aclonica"
                 android:gravity="center"
-                android:text="@string/_250"
+                android:text="@string/_0_00"
                 android:textColor="@color/colorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -190,7 +190,7 @@
         android:src="@drawable/ic_coinbudget" />
 
     <ProgressBar
-        android:id="@+id/progress_barCurrency"
+        android:id="@+id/progress_barBudget"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"

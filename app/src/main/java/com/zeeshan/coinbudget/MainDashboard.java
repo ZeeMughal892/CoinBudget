@@ -5,7 +5,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlarmManager;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
@@ -27,9 +27,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -48,6 +50,8 @@ import com.zeeshan.coinbudget.adapter.MainAdapter;
 import com.zeeshan.coinbudget.interfaces.CurrencyService;
 import com.zeeshan.coinbudget.model.CountryModel;
 import com.zeeshan.coinbudget.model.ExpenseOverview;
+import com.zeeshan.coinbudget.model.Income;
+import com.zeeshan.coinbudget.model.Savings;
 import com.zeeshan.coinbudget.model.User;
 import com.zeeshan.coinbudget.utils.AlarmReceiver;
 import com.zeeshan.coinbudget.utils.AppUtils;
@@ -62,7 +66,7 @@ import retrofit2.Response;
 
 public class MainDashboard extends AppCompatActivity {
 
-    DatabaseReference databaseUser;
+    DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome,databaseSavings;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
     DrawerLayout drawerLayout;
@@ -75,20 +79,29 @@ public class MainDashboard extends AppCompatActivity {
     List<ExpenseOverview> expenseOverviewList;
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
-    Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses;
-    Button btnReset, btnCancel, btnUpdateUserInfo, btnUpdateCurrency, btnUpdateFrequency, btnUpdatePin, btnLogout, btnCancelLogout, btnSetReminder, btnSelectDateTime;
-    EditText edEmail, edFullName, edPassword, edPin, edReEnterPin, edDateReminder, edNotesReminder, edIncomeAmount, edIncomeDescription;
+    Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency,
+            dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses,dialogSavings;
+
+    Button btnReset, btnCancel,btnRecurringExpense,btnEstimatedExpense, btnSavingDetails,btnAddSavings,btnIncomeDetails,
+            btnUpdateUserInfo, btnUpdateCurrency, btnUpdateFrequency, btnUpdatePin, btnLogout,btnSelectGoalDate,
+            btnCancelLogout, btnSetReminder, btnSelectDateTime, btnAddIncome, btnSelectDateIncome;
+
+    EditText edEmail, edFullName, edPassword, edPin, edReEnterPin, edDateReminder, edNotesReminder,
+            edIncomeAmount, edIncomeDescription, edIncomeDate,edSavingDate,edSavingAmount,edSavingTitle;
     Spinner spinnerFrequency, spinnerCurrency, spinnerFrequencyIncome;
     String format;
-    ProgressBar progressBarCurrency;
-    CardView cardViewRecurringExpenses, cardViewEstimatedExpenses;
+    ProgressBar progressBarCurrency, progressBarBudget;
+    private DatePickerDialog datePickerDialog;
+    TextView txtTotalIncomeBudget, txtTotalRecurringExpenseBudget, txtTotalEstimatedExpenseBudget, txtTotalRemianingAmountBudget;
 
     private int hourAlarm, minuteAlarm;
     private String fullName, userName, pin, currency, payFrequency;
     private Boolean isPremium = false;
+    private int totalIncome, totalRecurring, totalEstimated = 0;
+    private Double totalExtraIncome, totalRemainingBudget = 0.00;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main_dashboard);
@@ -415,6 +428,10 @@ public class MainDashboard extends AppCompatActivity {
         dialogExpenses.setContentView(R.layout.dialog_expenses_overview);
         dialogExpenses.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        dialogSavings = new Dialog(MainDashboard.this);
+        dialogSavings.setContentView(R.layout.dialog_savings);
+        dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -423,23 +440,159 @@ public class MainDashboard extends AppCompatActivity {
                         startActivity(new Intent(getApplicationContext(), Bank.class));
                         break;
                     case R.id.budget:
+                        txtTotalIncomeBudget = dialogBudget.findViewById(R.id.txtTotalIncomeBudget);
+                        txtTotalEstimatedExpenseBudget = dialogBudget.findViewById(R.id.txtEstimatedExpensesBudget);
+                        txtTotalRecurringExpenseBudget = dialogBudget.findViewById(R.id.txtRecurringExpensesBudget);
+                        txtTotalRemianingAmountBudget = dialogBudget.findViewById(R.id.txtRemainingAmountBudget);
+                        progressBarBudget = dialogBudget.findViewById(R.id.progress_barBudget);
+
+                        databaseEstimatedExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                               totalEstimated=0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.EstimatedExpenses estimatedExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.EstimatedExpenses.class);
+                                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalEstimated += Integer.parseInt(estimatedExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                               totalIncome=0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    if (income.getUserID().equals(firebaseUser.getUid())) {
+                                        totalIncome += Integer.parseInt(income.getIncomeAmount());
+                                    }
+                                }
+                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseExtraIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                               totalExtraIncome=0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
+                                    if (extraIncome.getUserID().equals(firebaseUser.getUid())) {
+                                        totalExtraIncome += Integer.parseInt(extraIncome.getExtraAmount());
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseRecurringExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                               totalRecurring=0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.RecurringExpenses recurringExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.RecurringExpenses.class);
+                                    if (recurringExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+
+                                totalRemainingBudget =  Double.parseDouble(txtTotalIncomeBudget.getText().toString()) - (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) + Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
+                                txtTotalRemianingAmountBudget.setText(String.valueOf(totalRemainingBudget));
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        txtTotalRemianingAmountBudget.setText(null);
+                        txtTotalRecurringExpenseBudget.setText(null);
+                        txtTotalEstimatedExpenseBudget.setText(null);
+                        txtTotalIncomeBudget.setText(null);
                         dialogBudget.show();
                         break;
                     case R.id.income:
+                        edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
+                        edIncomeDate = dialogIncome.findViewById(R.id.ed_DateIncome);
+                        edIncomeDescription = dialogIncome.findViewById(R.id.ed_descIncome);
+                        spinnerFrequencyIncome = dialogIncome.findViewById(R.id.spinnerIncome);
+
+                        btnIncomeDetails=dialogIncome.findViewById(R.id.btnIncomeDetails);
+                        btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
+                        btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
+
+                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
+                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = day + "/" + month + "/" + year;
+                                edIncomeDate.setText(Date);
+                            }
+                        });
+                        btnSelectDateIncome.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                datePickerDialog.show();
+                            }
+                        });
+                        btnIncomeDetails.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(MainDashboard.this,IncomeDetails.class));
+                            }
+                        });
+                        btnAddIncome.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String incomeId = databaseIncome.push().getKey();
+                                String userId = firebaseUser.getUid();
+                                String incomeAmount = edIncomeAmount.getText().toString().trim();
+                                String date = edIncomeDate.getText().toString().trim();
+                                String desc = edIncomeDescription.getText().toString().trim();
+                                String frequency = spinnerFrequencyIncome.getSelectedItem().toString().trim();
+                                Income income = new Income(incomeId, userId, incomeAmount, frequency, date, desc);
+                                databaseIncome.child(incomeId).setValue(income);
+                                Toast.makeText(view.getContext(), "Income Added Successfully", Toast.LENGTH_SHORT).show();
+                                edIncomeAmount.setText(null);
+                                edIncomeDate.setText(null);
+                                edIncomeDescription.setText(null);
+                                dialogIncome.dismiss();
+                            }
+                        });
                         dialogIncome.show();
                         break;
                     case R.id.expenses:
-                        cardViewRecurringExpenses = dialogExpenses.findViewById(R.id.cardViewRecurringExpense);
-                        cardViewEstimatedExpenses = dialogExpenses.findViewById(R.id.cardViewEstimatedExpenses);
+                        btnRecurringExpense = dialogExpenses.findViewById(R.id.btnRecurringExpense);
+                        btnEstimatedExpense = dialogExpenses.findViewById(R.id.btnEstimatedExpense);
 
-                        cardViewRecurringExpenses.setOnClickListener(new View.OnClickListener() {
+                        btnRecurringExpense.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 startActivity(new Intent(MainDashboard.this, RecurringExpenses.class));
                                 dialogExpenses.dismiss();
                             }
                         });
-                        cardViewEstimatedExpenses.setOnClickListener(new View.OnClickListener() {
+                        btnEstimatedExpense.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 startActivity(new Intent(MainDashboard.this, EstimatedExpenses.class));
@@ -449,7 +602,54 @@ public class MainDashboard extends AppCompatActivity {
                         dialogExpenses.show();
                         break;
                     case R.id.savings:
-                        startActivity(new Intent(getApplicationContext(), Savings.class));
+                        edSavingTitle=dialogSavings.findViewById(R.id.ed_titleSaving);
+                        edSavingDate=dialogSavings.findViewById(R.id.ed_DateSaving);
+                        edSavingAmount=dialogSavings.findViewById(R.id.ed_SavingAmount);
+
+                        btnSelectGoalDate=dialogSavings.findViewById(R.id.btnSelectGoalDate);
+                        btnSavingDetails=dialogSavings.findViewById(R.id.btnSavingDetails);
+                        btnAddSavings=dialogSavings.findViewById(R.id.btnAddSavings);
+
+                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
+                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = day + "/" + month + "/" + year;
+                                edSavingDate.setText(Date);
+                            }
+                        });
+                        btnSelectGoalDate.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                datePickerDialog.show();
+                            }
+                        });
+                        btnSavingDetails.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startActivity(new Intent(MainDashboard.this, SavingDetails.class));
+                            }
+                        });
+
+                        btnAddSavings.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String savingId=databaseSavings.push().getKey();
+                                String userId=firebaseUser.getUid();
+                                String title=edSavingTitle.getText().toString().trim();
+                                String amount=edSavingAmount.getText().toString().trim();
+                                String date=edSavingDate.getText().toString().trim();
+                                com.zeeshan.coinbudget.model.Savings savings=new Savings(savingId,userId,title,amount,date);
+                                databaseSavings.child(savingId).setValue(savings);
+                                Toast.makeText(MainDashboard.this,"Saving Goal Added",Toast.LENGTH_SHORT).show();
+                                edSavingTitle.setText(null);
+                                edSavingAmount.setText(null);
+                                edSavingDate.setText(null);
+                                dialogSavings.dismiss();
+                            }
+                        });
+
+                        dialogSavings.show();
                         break;
                 }
                 return true;
@@ -541,7 +741,7 @@ public class MainDashboard extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainDashboard.this);
         builder.setTitle(R.string.app_name);
         builder.setIcon(R.mipmap.ic_launcher);
-        builder.setMessage("Do you want to close the Coin Budget?")
+        builder.setMessage("Do you want to close the Coin DailyEntryDetail?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -571,6 +771,11 @@ public class MainDashboard extends AppCompatActivity {
         btnAddNewTransaction = findViewById(R.id.btnAddNewTransaction);
         messageContainer = findViewById(R.id.messageContainer);
         databaseUser = FirebaseDatabase.getInstance().getReference("Users");
+        databaseSavings = FirebaseDatabase.getInstance().getReference("Saving Goals");
+        databaseIncome = FirebaseDatabase.getInstance().getReference("Income");
+        databaseExtraIncome = FirebaseDatabase.getInstance().getReference("Extra Income");
+        databaseEstimatedExpense = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
+        databaseRecurringExpense = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
 
     }
 }

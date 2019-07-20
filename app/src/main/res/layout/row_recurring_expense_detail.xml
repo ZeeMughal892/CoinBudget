@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
-    app:cardCornerRadius="5dp">
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +27,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="@font/aclonica"
                 android:gravity="center"
                 android:text="@string/description"
                 android:textSize="12sp"
@@ -38,7 +37,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="@font/aclonica"
                 android:gravity="center"
                 android:text="@string/frequency"
                 android:textSize="12sp"
@@ -49,7 +47,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="@font/aclonica"
                 android:gravity="center"
                 android:text="@string/due_date"
                 android:textSize="12sp"
@@ -60,7 +57,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="@font/aclonica"
                 android:gravity="center"
                 android:text="@string/amount"
                 android:textSize="12sp"

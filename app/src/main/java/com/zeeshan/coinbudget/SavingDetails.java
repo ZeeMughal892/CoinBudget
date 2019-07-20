@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -22,34 +22,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.zeeshan.coinbudget.adapter.EstimatedDetailAdapter;
-import com.zeeshan.coinbudget.model.EstimatedExpenses;
+import com.zeeshan.coinbudget.adapter.SavingAdapter;
+import com.zeeshan.coinbudget.adapter.TransactionAdapter;
+import com.zeeshan.coinbudget.model.Savings;
+import com.zeeshan.coinbudget.model.Transactions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EstimatedExpensesDetails extends AppCompatActivity {
+public class SavingDetails extends AppCompatActivity {
 
     Toolbar toolbar;
     BottomNavigationView bottomNavigationView;
-    RecyclerView recyclerViewEstimatedDetails;
-    EstimatedDetailAdapter estimatedDetailAdapter;
-    List<EstimatedExpenses> estimatedExpensesList;
-    DatabaseReference databaseEstimatedExpenses;
+    DatabaseReference databaseSavings;
+    RecyclerView recyclerViewSavingDetails;
+    SavingAdapter savingAdapter;
+    List<Savings> savingsList;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    TextView txtTotalEstimatedAmount;
-
-    int total = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_estimated_expenses_details);
+        setContentView(R.layout.activity_saving_details);
         init();
         setUpToolbar();
-        loadEstimatedExpense();
-        bottomNavigationView.setSelectedItemId(R.id.income);
+        loadSavings();
+        bottomNavigationView.setSelectedItemId(R.id.savings);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -75,34 +74,27 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
         });
     }
 
-    private void loadEstimatedExpense() {
-        databaseEstimatedExpenses.addValueEventListener(new ValueEventListener() {
+    private void loadSavings() {
+        databaseSavings.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                estimatedExpensesList.clear();
+                savingsList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    EstimatedExpenses estimatedExpenses = snapshot.getValue(EstimatedExpenses.class);
-                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
-                        estimatedExpensesList.add(estimatedExpenses);
-
+                    com.zeeshan.coinbudget.model.Savings savings = snapshot.getValue(com.zeeshan.coinbudget.model.Savings.class);
+                    if (savings.getUserID().equals(firebaseUser.getUid())) {
+                        savingsList.add(savings);
                     }
                 }
-                estimatedDetailAdapter = new EstimatedDetailAdapter(estimatedExpensesList);
-                recyclerViewEstimatedDetails.setHasFixedSize(true);
+                savingAdapter = new SavingAdapter(savingsList);
+                recyclerViewSavingDetails.setHasFixedSize(true);
                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerViewEstimatedDetails.setLayoutManager(mLayoutManager);
-                recyclerViewEstimatedDetails.setItemAnimator(new DefaultItemAnimator());
-                recyclerViewEstimatedDetails.setAdapter(estimatedDetailAdapter);
-
-                for (EstimatedExpenses estimatedExpenses : estimatedExpensesList) {
-                    total += (Integer.parseInt(estimatedExpenses.getExpenseAmount()));
-                    txtTotalEstimatedAmount.setText(String.valueOf(total));
-                }
+                recyclerViewSavingDetails.setLayoutManager(mLayoutManager);
+                recyclerViewSavingDetails.setItemAnimator(new DefaultItemAnimator());
+                recyclerViewSavingDetails.setAdapter(savingAdapter);
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(EstimatedExpensesDetails .this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(SavingDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -115,7 +107,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(EstimatedExpensesDetails.this, MainDashboard.class));
+                startActivity(new Intent(SavingDetails.this, MainDashboard.class));
             }
         });
     }
@@ -123,11 +115,10 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
     private void init() {
         toolbar = findViewById(R.id.toolbar);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        estimatedExpensesList = new ArrayList<>();
-        databaseEstimatedExpenses = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-        txtTotalEstimatedAmount = findViewById(R.id.txtTotalEstimatedAmount);
-        recyclerViewEstimatedDetails=findViewById(R.id.recyclerViewEstimatedDetails);
+        recyclerViewSavingDetails=findViewById(R.id.recyclerViewSavingDetails);
+        savingsList=new ArrayList<>();
+        databaseSavings= FirebaseDatabase.getInstance().getReference("Saving Goals");
+        firebaseAuth=FirebaseAuth.getInstance();
+        firebaseUser=firebaseAuth.getCurrentUser();
     }
 }

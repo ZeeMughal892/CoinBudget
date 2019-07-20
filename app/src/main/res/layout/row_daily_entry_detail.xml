@@ -2,11 +2,12 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardViewRecurringDetail"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,24 +23,42 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/txtEntry"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="@font/aclonica"
                 android:gravity="center"
-                android:text="@string/description"
-                android:textColor="@color/colorPrimary"
+                android:text="@string/entry"
                 android:textSize="12sp"
                 tools:ignore="RtlHardcoded" />
 
             <TextView
+                android:id="@+id/txtNotes"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="@font/aclonica"
+                android:gravity="center"
+                android:text="@string/frequency"
+                android:textSize="12sp"
+                tools:ignore="RtlHardcoded" />
+
+            <TextView
+                android:id="@+id/txtDate"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/date"
+                android:textSize="12sp"
+                tools:ignore="RtlHardcoded" />
+
+            <TextView
+                android:id="@+id/txtAmount"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/amount"
-                android:textColor="@color/colorPrimary"
                 android:textSize="12sp"
                 tools:ignore="RtlHardcoded" />
 
