@@ -51,4 +51,8 @@ public class SplashScreen extends AppCompatActivity {
         };
         timer.start();
     }
+    @Override
+    public void onBackPressed() {
+
+    }
 }

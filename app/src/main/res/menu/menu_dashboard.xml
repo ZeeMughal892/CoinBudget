@@ -7,10 +7,6 @@
             android:icon="@drawable/ic_home_black_24dp"
             android:title="@string/dashboard" />
         <item
-            android:id="@+id/payPeriodFrequency"
-            android:title="@string/pay_period_frequency"
-            android:icon="@drawable/ic_pay_period_frequency"/>
-        <item
             android:id="@+id/userInformation"
             android:title="@string/user_information"
             android:icon="@drawable/ic_user_information"/>

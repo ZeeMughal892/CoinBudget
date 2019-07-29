@@ -172,7 +172,7 @@ public class EstimatedExpenses extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = day + "/" + month + "/" + year;
+                                String Date = month+1 + "/" + day + "/" + year;
                                 edDateBank.setText(Date);
                             }
                         });
@@ -208,99 +208,7 @@ public class EstimatedExpenses extends AppCompatActivity {
                         dialogBank.show();
                         break;
                     case R.id.budget:
-                        txtTotalIncomeBudget = dialogBudget.findViewById(R.id.txtTotalIncomeBudget);
-                        txtTotalEstimatedExpenseBudget = dialogBudget.findViewById(R.id.txtEstimatedExpensesBudget);
-                        txtTotalRecurringExpenseBudget = dialogBudget.findViewById(R.id.txtRecurringExpensesBudget);
-                        txtTotalRemainingAmountBudget = dialogBudget.findViewById(R.id.txtRemainingAmountBudget);
-                        progressBarBudget = dialogBudget.findViewById(R.id.progress_barBudget);
-
-                        databaseEstimatedExpense.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                totalEstimated = 0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.EstimatedExpenses estimatedExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.EstimatedExpenses.class);
-                                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
-                                        totalEstimated += Integer.parseInt(estimatedExpenses.getExpenseAmount());
-                                    }
-                                }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(EstimatedExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                progressBarBudget.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                        databaseIncome.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                totalIncome = 0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
-                                    if (income.getUserID().equals(firebaseUser.getUid())) {
-                                        totalIncome += Integer.parseInt(income.getIncomeAmount());
-                                    }
-                                }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(EstimatedExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                progressBarBudget.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                        databaseExtraIncome.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                totalExtraIncome = 0.0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
-                                    if (extraIncome.getUserID().equals(firebaseUser.getUid())) {
-                                        totalExtraIncome += Integer.parseInt(extraIncome.getExtraAmount());
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(EstimatedExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                progressBarBudget.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                        databaseRecurringExpense.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                totalRecurring = 0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.RecurringExpenses recurringExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.RecurringExpenses.class);
-                                    if (recurringExpenses.getUserID().equals(firebaseUser.getUid())) {
-                                        totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
-                                    }
-                                }
-
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(Double.parseDouble(String.valueOf(totalRecurring))));
-
-                                totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(EstimatedExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                progressBarBudget.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                        txtTotalRemainingAmountBudget.setText(null);
-                        txtTotalRecurringExpenseBudget.setText(null);
-                        txtTotalEstimatedExpenseBudget.setText(null);
-                        txtTotalIncomeBudget.setText(null);
-                        dialogBudget.show();
+                        startActivity(new Intent(EstimatedExpenses.this, Budget.class));
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -316,7 +224,7 @@ public class EstimatedExpenses extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = day + "/" + month + "/" + year;
+                                String Date = month+1 + "/" + day + "/" + year;
                                 edIncomeDate.setText(Date);
                             }
                         });
@@ -393,7 +301,7 @@ public class EstimatedExpenses extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = day + "/" + month + "/" + year;
+                                String Date = month+1 + "/" + day + "/" + year;
                                 edSavingDate.setText(Date);
                             }
                         });
@@ -446,7 +354,10 @@ public class EstimatedExpenses extends AppCompatActivity {
 
 
     }
+    @Override
+    public void onBackPressed() {
 
+    }
     private void loadLookups() {
         databaseUsers.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
@@ -527,11 +438,9 @@ public class EstimatedExpenses extends AppCompatActivity {
         firebaseUser = firebaseAuth.getCurrentUser();
         progressBar = findViewById(R.id.progressBar);
         navigationView = findViewById(R.id.navigationView);
-        recyclerView = findViewById(R.id.recyclerViewMain);
         expenseOverviewList = new ArrayList<>();
         btnAddExtraIncome = findViewById(R.id.btnAddExtraIncome);
         btnAddNewTransaction = findViewById(R.id.btnAddNewTransaction);
-        messageContainer = findViewById(R.id.messageContainer);
         databaseUser = FirebaseDatabase.getInstance().getReference("Users");
         databaseBankAccount = FirebaseDatabase.getInstance().getReference("Bank Account");
         databaseSavings = FirebaseDatabase.getInstance().getReference("Saving Goals");

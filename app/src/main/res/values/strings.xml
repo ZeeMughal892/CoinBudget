@@ -111,6 +111,12 @@
     <string name="add_loan_account">Add Loan Account</string>
     <string name="add_additional_account">Add Additional Account</string>
     <string name="account_balance">Account Balance :</string>
+    <string name="expense_name">Expense Name</string>
+    <string name="balance">Balance</string>
+    <string name="starting_monthly_balance">Starting Monthly Balance</string>
+    <string name="_3548">$ 3548</string>
+    <string name="totals">Totals</string>
+    <string name="_5297_20">$ 5297.20</string>
 
     <string-array name="Frequency">
         <item>Monthly</item>

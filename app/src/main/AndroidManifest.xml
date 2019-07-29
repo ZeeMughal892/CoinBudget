@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.zeeshan.coinbudget">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -7,22 +8,25 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
     <application
+        android:name=".utils.Home"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".SignIn"></activity>
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".BudgetSummary"></activity>
+        <activity
+            android:name=".Budget"
+            android:screenOrientation="landscape" />
+        <activity android:name=".SignIn" />
         <activity android:name=".IncomeDetails" />
         <activity android:name=".EstimatedExpenses" />
         <activity android:name=".RecurringExpenses" />
         <activity android:name=".Transaction" />
         <activity android:name=".ExtraIncome" />
-        <activity android:name=".EnterLookup" >
-
-        </activity>
-        <activity android:name=".Bank" />
+        <activity android:name=".EnterLookup" />
         <activity android:name=".RecurringExpensesDetails" />
         <activity android:name=".SavingDetails" />
         <activity android:name=".EstimatedExpensesDetails" />
@@ -42,7 +46,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainDashboard" />
+        <activity
+            android:name=".MainDashboard"
+            android:launchMode="singleTask" />
 
         <meta-data
             android:name="preloaded_fonts"

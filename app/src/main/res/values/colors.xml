@@ -12,4 +12,6 @@
     <color name="colorPrimaryLight">#DCE775</color>
 
     <color name="colorRed">#f44336</color>
+    <color name="colorBlue">#1A237E</color>
+    <color name="colorGreen">#1B5E20</color>
 </resources>

@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.zeeshan.coinbudget.model.User;
+import com.zeeshan.coinbudget.utils.Home;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,11 +33,16 @@ public class SignIn extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-        providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(), new AuthUI.IdpConfig.FacebookBuilder().build());
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            startActivity(new Intent(SignIn.this, MainDashboard.class));
+        } else {
 
-        databaseUsers= FirebaseDatabase.getInstance().getReference("Users");
-
-        showSignInOptions();
+            providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(), new AuthUI.IdpConfig.FacebookBuilder().build());
+            databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
+            showSignInOptions();
+        }
     }
 
     private void showSignInOptions() {
@@ -48,6 +54,12 @@ public class SignIn extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+
+    }
+
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == MY_REQUEST_CODE) {
@@ -55,10 +67,10 @@ public class SignIn extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
                 FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-                String userId=firebaseUser.getUid();
-                String fullName=firebaseUser.getDisplayName();
-                String email=firebaseUser.getEmail();
-                User user=new User(userId, fullName, email, "USD", "Monthly", "", false);
+                String userId = firebaseUser.getUid();
+                String fullName = firebaseUser.getDisplayName();
+                String email = firebaseUser.getEmail();
+                User user = new User(userId, fullName, email, "USD", "Monthly", "", false);
                 databaseUsers.child(userId).setValue(user);
                 startActivity(new Intent(SignIn.this, MainDashboard.class));
             }

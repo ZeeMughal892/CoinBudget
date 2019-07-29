@@ -194,7 +194,10 @@ public class Register extends AppCompatActivity implements GoogleApiClient.OnCon
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
     }
+    @Override
+    public void onBackPressed() {
 
+    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {

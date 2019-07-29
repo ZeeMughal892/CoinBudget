@@ -1,24 +1,20 @@
 package com.zeeshan.coinbudget;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -39,105 +35,105 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.zeeshan.coinbudget.adapter.LookupAdapter;
+import com.zeeshan.coinbudget.adapter.BudgetAdapter;
 import com.zeeshan.coinbudget.model.BankAccount;
+import com.zeeshan.coinbudget.model.BudgetModel;
 import com.zeeshan.coinbudget.model.ExpenseOverview;
+import com.zeeshan.coinbudget.model.ExtraIncome;
 import com.zeeshan.coinbudget.model.Income;
-import com.zeeshan.coinbudget.model.Lookup;
 import com.zeeshan.coinbudget.model.Savings;
-import com.zeeshan.coinbudget.model.User;
+import com.zeeshan.coinbudget.model.Transactions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Transaction extends AppCompatActivity {
+public class Budget extends AppCompatActivity {
 
-    Toolbar toolbar;
-    BottomNavigationView bottomNavigationView;
-    RecyclerView recyclerViewTransactions;
-    List<Lookup> lookupList;
-    LookupAdapter lookupAdapter;
-    DatabaseReference databaseLookup, databaseUsers;
-    String LookupName = "Transaction";
-    ProgressBar progressBar;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount;
+    DatabaseReference databaseTransaction, databaseIncome, databaseExtraIncome;
+    RecyclerView recyclerViewBudget;
+    BudgetAdapter budgetAdapter;
+    TextView txtStartingMonthlyBalance;
+    ProgressBar progressBarBudget;
+    BottomNavigationView bottomNavigationView;
+    Toolbar toolbar;
+
+    List<BudgetModel> budgetModelList;
+    List<com.zeeshan.coinbudget.model.Budget> budgetList;
+
+    List<Income> incomeList;
+    List<com.zeeshan.coinbudget.model.ExtraIncome> extraIncomeList;
+    List<Transactions> transactionsList;
+
+
+    ProgressBar progressBar;
+    Boolean isPremium = false;
+    DatabaseReference databaseUser, databaseRecurringExpense, databaseEstimatedExpense, databaseSavings, databaseBankAccount;
     NavigationView navigationView;
     RecyclerView recyclerView;
     List<ExpenseOverview> expenseOverviewList;
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
-
-    Dialog  dialogBank, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
-
-    Button btnRecurringExpense, btnEstimatedExpense, btnSavingDetails, btnAddSavings, btnIncomeDetails,
-             btnSelectGoalDate, btnSelectDateBank,btnAddIncome, btnSelectDateIncome, btnAddBankAmount, btnAddBankAccount, btnAddLoanAccount, btnAddAdditionalAccount;
-
+    Dialog dialogBank, dialogIncome, dialogExpenses, dialogSavings;
+    Button btnRecurringExpense, btnEstimatedExpense, btnSavingDetails, btnAddSavings, btnIncomeDetails, btnSelectGoalDate, btnSelectDateBank,
+            btnAddIncome, btnSelectDateIncome, btnAddBankAmount, btnAddBankAccount, btnAddLoanAccount, btnAddAdditionalAccount;
     TextView txtTotalIncomeBudget, txtTotalRecurringExpenseBudget, txtTotalEstimatedExpenseBudget, txtTotalRemainingAmountBudget, txtAccountBalance, txtOR;
-
-    EditText edEmail,  edPassword, edAmountBank, edDateBank,
+    EditText edEmail, edPassword, edAmountBank, edDateBank,
             edIncomeAmount, edIncomeDescription, edIncomeDate, edSavingDate, edSavingAmount, edSavingTitle;
-
-    Spinner  spinnerFrequencyIncome;
-
+    Spinner spinnerFrequencyIncome;
     String format;
-    ProgressBar progressBarCurrency, progressBarBudget;
+    ProgressBar progressBarCurrency;
     private DatePickerDialog datePickerDialog;
-
-    private int hourAlarm, minuteAlarm;
-    private String fullName, userName, pin, currency, payFrequency;
-    private Boolean isPremium = false;
-    private int totalIncome, totalRecurring, totalEstimated = 0;
-    private Double totalAccountBalance, totalRemainingBudget,totalExtraIncome = 0.00;
-
+    private Double totalAccountBalance = 0.00;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transaction);
-
+        setContentView(R.layout.activity_budget);
         init();
         setUpToolbar();
-        progressBar.setVisibility(View.VISIBLE);
-        dialogBank = new Dialog(Transaction.this);
+        setupBottomNav();
+        loadTableValues();
+        recyclerViewBudget.setHasFixedSize(true);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerViewBudget.setLayoutManager(mLayoutManager);
+        recyclerViewBudget.setItemAnimator(new DefaultItemAnimator());
+
+    }
+
+    private void setupBottomNav() {
+        dialogBank = new Dialog(Budget.this);
         dialogBank.setContentView(R.layout.dialog_bank);
         dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        dialogBudget = new Dialog(Transaction.this);
-        dialogBudget.setContentView(R.layout.dialog_budget);
-        dialogBudget.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        dialogIncome = new Dialog(Transaction.this);
+        dialogIncome = new Dialog(Budget.this);
         dialogIncome.setContentView(R.layout.dialog_income_overview);
         dialogIncome.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        dialogExpenses = new Dialog(Transaction.this);
+        dialogExpenses = new Dialog(Budget.this);
         dialogExpenses.setContentView(R.layout.dialog_expenses_overview);
         dialogExpenses.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        dialogSavings = new Dialog(Transaction.this);
+        dialogSavings = new Dialog(Budget.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        bottomNavigationView.setSelectedItemId(R.id.budget);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.bank:
-
                         txtAccountBalance = dialogBank.findViewById(R.id.txtAccountBalance);
                         txtOR = dialogBank.findViewById(R.id.txtOR);
-
                         edAmountBank = dialogBank.findViewById(R.id.ed_AmountBank);
                         edDateBank = dialogBank.findViewById(R.id.ed_DateBank);
-
                         btnSelectDateBank = dialogBank.findViewById(R.id.btnSelectBankDate);
                         btnAddBankAmount = dialogBank.findViewById(R.id.btnAddBankAmount);
                         btnAddBankAccount = dialogBank.findViewById(R.id.btnAddBankAccount);
                         btnAddLoanAccount = dialogBank.findViewById(R.id.btnAddLoanAccount);
                         btnAddAdditionalAccount = dialogBank.findViewById(R.id.btnAddAdditionalAccount);
-
                         if (!isPremium) {
                             txtOR.setVisibility(View.GONE);
                             btnAddLoanAccount.setVisibility(View.GONE);
@@ -162,15 +158,15 @@ public class Transaction extends AppCompatActivity {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
 
-                        datePickerDialog = new DatePickerDialog(Transaction.this);
+                        datePickerDialog = new DatePickerDialog(Budget.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edDateBank.setText(Date);
                             }
                         });
@@ -190,13 +186,13 @@ public class Transaction extends AppCompatActivity {
                                 String amount = edAmountBank.getText().toString().trim();
                                 String date = edDateBank.getText().toString().trim();
                                 if (TextUtils.isEmpty(amount)) {
-                                    Toast.makeText(Transaction.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please enter amount", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(date)) {
-                                    Toast.makeText(Transaction.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please select date", Toast.LENGTH_SHORT).show();
                                 } else {
                                     BankAccount bankAccount = new BankAccount(accountId, userId, amount, date);
                                     databaseBankAccount.child(accountId).setValue(bankAccount);
-                                    Toast.makeText(Transaction.this, "Amount Added", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Amount Added", Toast.LENGTH_SHORT).show();
                                     edAmountBank.setText(null);
                                     edDateBank.setText(null);
                                     dialogBank.dismiss();
@@ -206,7 +202,6 @@ public class Transaction extends AppCompatActivity {
                         dialogBank.show();
                         break;
                     case R.id.budget:
-                        startActivity(new Intent(Transaction.this, Budget.class));
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -218,11 +213,11 @@ public class Transaction extends AppCompatActivity {
                         btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
                         btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
 
-                        datePickerDialog = new DatePickerDialog(Transaction.this);
+                        datePickerDialog = new DatePickerDialog(Budget.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edIncomeDate.setText(Date);
                             }
                         });
@@ -235,7 +230,7 @@ public class Transaction extends AppCompatActivity {
                         btnIncomeDetails.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                startActivity(new Intent(Transaction.this, IncomeDetails.class));
+                                startActivity(new Intent(Budget.this, IncomeDetails.class));
                             }
                         });
                         btnAddIncome.setOnClickListener(new View.OnClickListener() {
@@ -248,11 +243,11 @@ public class Transaction extends AppCompatActivity {
                                 String desc = edIncomeDescription.getText().toString().trim();
                                 String frequency = spinnerFrequencyIncome.getSelectedItem().toString().trim();
                                 if (TextUtils.isEmpty(incomeAmount)) {
-                                    Toast.makeText(Transaction.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please enter amount", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(date)) {
-                                    Toast.makeText(Transaction.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please select date", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(desc)) {
-                                    Toast.makeText(Transaction.this, "Please enter description", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please enter description", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Income income = new Income(incomeId, userId, incomeAmount, frequency, date, desc);
                                     databaseIncome.child(incomeId).setValue(income);
@@ -273,14 +268,14 @@ public class Transaction extends AppCompatActivity {
                         btnRecurringExpense.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                startActivity(new Intent(Transaction.this, RecurringExpenses.class));
+                                startActivity(new Intent(Budget.this, RecurringExpenses.class));
                                 dialogExpenses.dismiss();
                             }
                         });
                         btnEstimatedExpense.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                startActivity(new Intent(Transaction.this, EstimatedExpenses.class));
+                                startActivity(new Intent(Budget.this, EstimatedExpenses.class));
                                 dialogExpenses.dismiss();
                             }
                         });
@@ -295,11 +290,11 @@ public class Transaction extends AppCompatActivity {
                         btnSavingDetails = dialogSavings.findViewById(R.id.btnSavingDetails);
                         btnAddSavings = dialogSavings.findViewById(R.id.btnAddSavings);
 
-                        datePickerDialog = new DatePickerDialog(Transaction.this);
+                        datePickerDialog = new DatePickerDialog(Budget.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edSavingDate.setText(Date);
                             }
                         });
@@ -312,10 +307,9 @@ public class Transaction extends AppCompatActivity {
                         btnSavingDetails.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                startActivity(new Intent(Transaction.this, SavingDetails.class));
+                                startActivity(new Intent(Budget.this, SavingDetails.class));
                             }
                         });
-
                         btnAddSavings.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -325,15 +319,15 @@ public class Transaction extends AppCompatActivity {
                                 String amount = edSavingAmount.getText().toString().trim();
                                 String date = edSavingDate.getText().toString().trim();
                                 if (TextUtils.isEmpty(title)) {
-                                    Toast.makeText(Transaction.this, "Please enter goal title", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please enter goal title", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(amount)) {
-                                    Toast.makeText(Transaction.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please enter amount", Toast.LENGTH_SHORT).show();
                                 } else if (TextUtils.isEmpty(date)) {
-                                    Toast.makeText(Transaction.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Please select date", Toast.LENGTH_SHORT).show();
                                 } else {
                                     com.zeeshan.coinbudget.model.Savings savings = new Savings(savingId, userId, title, amount, date);
                                     databaseSavings.child(savingId).setValue(savings);
-                                    Toast.makeText(Transaction.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Budget.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
                                     edSavingTitle.setText(null);
                                     edSavingAmount.setText(null);
                                     edSavingDate.setText(null);
@@ -341,77 +335,73 @@ public class Transaction extends AppCompatActivity {
                                 }
                             }
                         });
-
                         dialogSavings.show();
                         break;
                 }
                 return true;
             }
         });
-        loadLookups();
     }
 
-    private void loadLookups() {
-        databaseUsers.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+    private void loadTableValues() {
+        databaseIncome.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                isPremium = user.isPremium;
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-        databaseLookup.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                lookupList.clear();
-                for (DataSnapshot lookupSnapshot : dataSnapshot.getChildren()) {
-                    Lookup lookup = lookupSnapshot.getValue(Lookup.class);
-                    if (LookupName.equals(lookup.getLookUpName()) && lookup.getPremium().equals(isPremium)) {
-                        lookupList.add(lookup);
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Income income = snapshot.getValue(Income.class);
+                    if (firebaseUser.getUid().equals(income.getUserID())) {
+                        incomeList.add(income);
                     }
                 }
-                lookupAdapter = new LookupAdapter(lookupList, LookupName);
-                recyclerViewTransactions.setLayoutManager(new GridLayoutManager(Transaction.this, 3));
-                recyclerViewTransactions.setAdapter(lookupAdapter);
-                progressBar.setVisibility(View.INVISIBLE);
+                databaseExtraIncome.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            ExtraIncome extraIncome = snapshot.getValue(ExtraIncome.class);
+                            if (firebaseUser.getUid().equals(extraIncome.getUserID())) {
+                                extraIncomeList.add(extraIncome);
+                            }
+                        }
+                        databaseTransaction.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    Transactions transactions = snapshot.getValue(Transactions.class);
+                                    if (firebaseUser.getUid().equals(transactions.getUserID())) {
+                                        transactionsList.add(transactions);
+                                    }
+                                }
+                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(Transaction.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_details, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.btnDetails) {
-            Intent intent=new Intent(Transaction.this, DailyEntryDetail.class);
-            intent.putExtra("LookupName",LookupName);
-            startActivity(intent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void setUpToolbar() {
         toolbar.setNavigationIcon(R.drawable.ic_chevron_left_black_24dp);
         toolbar.setTitle("");
+
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(Transaction.this, MainDashboard.class));
+                startActivity(new Intent(Budget.this, MainDashboard.class));
             }
         });
     }
@@ -420,26 +410,25 @@ public class Transaction extends AppCompatActivity {
     public void onBackPressed() {
 
     }
+
     private void init() {
-        toolbar = findViewById(R.id.toolbar);
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        recyclerViewTransactions = findViewById(R.id.recyclerViewTransaction);
-        lookupList = new ArrayList<>();
-        databaseLookup = FirebaseDatabase.getInstance().getReference("Lookups");
-        databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
-        progressBar = findViewById(R.id.progress_barTransaction);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        navigationView = findViewById(R.id.navigationView);
-        expenseOverviewList = new ArrayList<>();
-        btnAddExtraIncome = findViewById(R.id.btnAddExtraIncome);
-        btnAddNewTransaction = findViewById(R.id.btnAddNewTransaction);
-        databaseUser = FirebaseDatabase.getInstance().getReference("Users");
+
+        databaseTransaction = FirebaseDatabase.getInstance().getReference("Transaction");
         databaseBankAccount = FirebaseDatabase.getInstance().getReference("Bank Account");
-        databaseSavings = FirebaseDatabase.getInstance().getReference("Saving Goals");
-        databaseIncome = FirebaseDatabase.getInstance().getReference("Income");
         databaseExtraIncome = FirebaseDatabase.getInstance().getReference("Extra Income");
-        databaseEstimatedExpense = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
-        databaseRecurringExpense = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
+        databaseSavings = FirebaseDatabase.getInstance().getReference("Savings");
+        databaseIncome = FirebaseDatabase.getInstance().getReference("Income");
+
+        txtStartingMonthlyBalance = findViewById(R.id.txtStartingMonthlyBalance);
+        recyclerViewBudget = findViewById(R.id.recyclerViewBudget);
+        toolbar = findViewById(R.id.toolbar);
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        progressBarBudget = findViewById(R.id.progressBarBudget);
+
+        incomeList = new ArrayList<>();
+        transactionsList = new ArrayList<>();
+        extraIncomeList = new ArrayList<>();
     }
 }
