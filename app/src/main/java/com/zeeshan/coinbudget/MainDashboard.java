@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.camera2.TotalCaptureResult;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -98,6 +99,10 @@ public class MainDashboard extends AppCompatActivity {
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
 
+    Double totalExtraIncome = 0.0;
+    Double totalRecurring = 0.0;
+    Double totalIncome = 0.0;
+    Double totalEstimated = 0.0;
 
     Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogBank,
             dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
@@ -121,20 +126,20 @@ public class MainDashboard extends AppCompatActivity {
     String fullName, userName, pin, currency, payFrequency;
     Boolean isPremium = false;
 
-    Double totalAccountBalance = 0.0, totalRemainingBudget = 0.0, totalAverageExpense = 0.0, totalExtraIncome = 0.0,
-           totalRemainingBudget1 = 0.0, totalAverageExpense1 = 0.0,
-           totalRemainingBudget2 = 0.0, totalAverageExpense2 = 0.0, totalExtraIncome2 = 0.0,
-           totalRemainingBudget3 = 0.0, totalAverageExpense3 = 0.0, totalExtraIncome3 = 0.0;
+    Double totalAccountBalance = 0.0, totalRemainingBudget = 0.0, totalAverageExpense = 0.0,
+            totalRemainingBudget1 = 0.0, totalAverageExpense1 = 0.0,
+            totalRemainingBudget2 = 0.0, totalAverageExpense2 = 0.0, totalExtraIncome2 = 0.0,
+            totalRemainingBudget3 = 0.0, totalAverageExpense3 = 0.0, totalExtraIncome3 = 0.0;
 
     List<Income> incomeList;
     List<Transactions> transactionsList;
     List<BankAccount> bankAccountList;
     List<com.zeeshan.coinbudget.model.ExtraIncome> extraIncomeList;
 
-    Double totalAmountInBank = 0.0,  totalAmountInBank2 = 0.0,
-            totalTransactionAmount = 0.0,  totalAmountInBank3 = 0.0;
+    Double totalAmountInBank = 0.0, totalAmountInBank2 = 0.0,
+            totalTransactionAmount = 0.0, totalAmountInBank3 = 0.0;
 
-    CardView cardView1, cardView2, cardView3;
+    CardView cardView1, cardView2, cardView3,cardView4;
     TextView txtRemainingBudget1, txtRemainingBudget2, txtRemainingBudget3,
             txtRemainingDays1, txtRemainingDays2, txtRemainingDays3,
             txtAverageBudget1, txtAverageBudget2, txtAverageBudget3;
@@ -185,6 +190,7 @@ public class MainDashboard extends AppCompatActivity {
         dialogLogout = new Dialog(MainDashboard.this);
         dialogLogout.setContentView(R.layout.dialog_logout);
         dialogLogout.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -498,12 +504,14 @@ public class MainDashboard extends AppCompatActivity {
                                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
+
+
                         datePickerDialog = new DatePickerDialog(MainDashboard.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                                 String Date = month + 1 + "/" + day + "/" + year;
-                                edDateBank.setText(Date);
+                                edIncomeDate.setText(Date);
                             }
                         });
                         btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
@@ -536,7 +544,98 @@ public class MainDashboard extends AppCompatActivity {
                         dialogBank.show();
                         break;
                     case R.id.budget:
-                        startActivity(new Intent(MainDashboard.this, BudgetSummary.class));
+                        txtTotalIncomeBudget = dialogBudget.findViewById(R.id.txtTotalIncomeBudget);
+                        txtTotalEstimatedExpenseBudget = dialogBudget.findViewById(R.id.txtEstimatedExpensesBudget);
+                        txtTotalRecurringExpenseBudget = dialogBudget.findViewById(R.id.txtRecurringExpensesBudget);
+                        txtTotalRemainingAmountBudget = dialogBudget.findViewById(R.id.txtRemainingAmountBudget);
+                        progressBarBudget = dialogBudget.findViewById(R.id.progress_barBudget);
+
+                        databaseEstimatedExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalEstimated = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.EstimatedExpenses estimatedExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.EstimatedExpenses.class);
+                                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalIncome = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    Income income = snapshot.getValue(Income.class);
+                                    if (income.getUserID().equals(firebaseUser.getUid())) {
+                                        totalIncome += Double.parseDouble(income.getIncomeAmount());
+                                    }
+                                }
+                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseExtraIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalExtraIncome = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
+                                    if (extraIncome.getUserID().equals(firebaseUser.getUid())) {
+                                        totalExtraIncome += Double.parseDouble(extraIncome.getExtraAmount());
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseRecurringExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalRecurring = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.RecurringExpenses recurringExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.RecurringExpenses.class);
+                                    if (recurringExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+
+                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
+                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
+                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
+                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        txtTotalRemainingAmountBudget.setText(null);
+                        txtTotalRecurringExpenseBudget.setText(null);
+                        txtTotalEstimatedExpenseBudget.setText(null);
+                        txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -546,6 +645,8 @@ public class MainDashboard extends AppCompatActivity {
                         btnIncomeDetails = dialogIncome.findViewById(R.id.btnIncomeDetails);
                         btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
                         btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
+
+
                         datePickerDialog = new DatePickerDialog(MainDashboard.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
@@ -554,6 +655,8 @@ public class MainDashboard extends AppCompatActivity {
                                 edIncomeDate.setText(Date);
                             }
                         });
+
+
                         btnSelectDateIncome.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -622,6 +725,7 @@ public class MainDashboard extends AppCompatActivity {
                         btnSavingDetails = dialogSavings.findViewById(R.id.btnSavingDetails);
                         btnAddSavings = dialogSavings.findViewById(R.id.btnAddSavings);
 
+
                         datePickerDialog = new DatePickerDialog(MainDashboard.this);
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
@@ -630,6 +734,7 @@ public class MainDashboard extends AppCompatActivity {
                                 edSavingDate.setText(Date);
                             }
                         });
+
                         btnSelectGoalDate.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -658,7 +763,7 @@ public class MainDashboard extends AppCompatActivity {
                                 } else if (TextUtils.isEmpty(date)) {
                                     Toast.makeText(MainDashboard.this, "Please select date", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    com.zeeshan.coinbudget.model.Savings savings = new Savings(savingId, userId, title, amount, date);
+                                    Savings savings = new Savings(savingId, userId, title, amount, date);
                                     databaseSavings.child(savingId).setValue(savings);
                                     Toast.makeText(MainDashboard.this, "Saving Goal Added", Toast.LENGTH_SHORT).show();
                                     edSavingTitle.setText(null);
@@ -877,7 +982,7 @@ public class MainDashboard extends AppCompatActivity {
                                             Double income2 = Double.parseDouble(incomeList.get(1).getIncomeAmount());
                                             totalRemainingBudget2 = 0.0;
                                             totalAverageExpense2 = 0.0;
-                                            totalRemainingBudget2 = (totalExtraIncome2 + income2 ) - totalTransactionAmount;
+                                            totalRemainingBudget2 = (totalExtraIncome2 + income2) - totalTransactionAmount;
                                             totalAverageExpense2 = (totalTransactionAmount) / transactionsList.size();
 
                                             txtRemainingDays2.setText(dayCount2 + " days");
@@ -964,12 +1069,14 @@ public class MainDashboard extends AppCompatActivity {
                             });
                         }
                     }
+
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
                         Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();

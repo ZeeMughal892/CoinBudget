@@ -95,7 +95,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                 datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String Date = day + "/" + month + "/" + year;
+                        String Date = month + "/" + day + "/" + year;
                         ed_Date.setText(Date);
                     }
                 });

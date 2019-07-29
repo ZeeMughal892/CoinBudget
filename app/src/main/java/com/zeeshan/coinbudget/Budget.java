@@ -13,6 +13,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -75,7 +76,7 @@ public class Budget extends AppCompatActivity {
     List<ExpenseOverview> expenseOverviewList;
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
-    Dialog dialogBank, dialogIncome, dialogExpenses, dialogSavings;
+    Dialog dialogBank, dialogIncome, dialogExpenses, dialogSavings, dialogBudget;
     Button btnRecurringExpense, btnEstimatedExpense, btnSavingDetails, btnAddSavings, btnIncomeDetails, btnSelectGoalDate, btnSelectDateBank,
             btnAddIncome, btnSelectDateIncome, btnAddBankAmount, btnAddBankAccount, btnAddLoanAccount, btnAddAdditionalAccount;
     TextView txtTotalIncomeBudget, txtTotalRecurringExpenseBudget, txtTotalEstimatedExpenseBudget, txtTotalRemainingAmountBudget, txtAccountBalance, txtOR;
@@ -86,6 +87,10 @@ public class Budget extends AppCompatActivity {
     ProgressBar progressBarCurrency;
     private DatePickerDialog datePickerDialog;
     private Double totalAccountBalance = 0.00;
+    Double totalExtraIncome = 0.0;
+    Double totalRecurring = 0.0;
+    Double totalIncome = 0.0;
+    Double totalEstimated = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +123,10 @@ public class Budget extends AppCompatActivity {
         dialogSavings = new Dialog(Budget.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialogBudget = new Dialog(Budget.this);
+        dialogBudget.setContentView(R.layout.dialog_budget);
+        dialogBudget.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         bottomNavigationView.setSelectedItemId(R.id.budget);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -202,6 +211,98 @@ public class Budget extends AppCompatActivity {
                         dialogBank.show();
                         break;
                     case R.id.budget:
+                        txtTotalIncomeBudget = dialogBudget.findViewById(R.id.txtTotalIncomeBudget);
+                        txtTotalEstimatedExpenseBudget = dialogBudget.findViewById(R.id.txtEstimatedExpensesBudget);
+                        txtTotalRecurringExpenseBudget = dialogBudget.findViewById(R.id.txtRecurringExpensesBudget);
+                        txtTotalRemainingAmountBudget = dialogBudget.findViewById(R.id.txtRemainingAmountBudget);
+                        progressBarBudget = dialogBudget.findViewById(R.id.progress_barBudget);
+
+                        databaseEstimatedExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalEstimated = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.EstimatedExpenses estimatedExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.EstimatedExpenses.class);
+                                    if (estimatedExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalIncome = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    if (income.getUserID().equals(firebaseUser.getUid())) {
+                                        totalIncome += Double.parseDouble(income.getIncomeAmount());
+                                    }
+                                }
+                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseExtraIncome.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalExtraIncome = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
+                                    if (extraIncome.getUserID().equals(firebaseUser.getUid())) {
+                                        totalExtraIncome += Double.parseDouble(extraIncome.getExtraAmount());
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        databaseRecurringExpense.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalRecurring = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    com.zeeshan.coinbudget.model.RecurringExpenses recurringExpenses = snapshot.getValue(com.zeeshan.coinbudget.model.RecurringExpenses.class);
+                                    if (recurringExpenses.getUserID().equals(firebaseUser.getUid())) {
+                                        totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
+                                    }
+                                }
+                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+
+                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
+                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
+                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
+                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                progressBarBudget.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        txtTotalRemainingAmountBudget.setText(null);
+                        txtTotalRecurringExpenseBudget.setText(null);
+                        txtTotalEstimatedExpenseBudget.setText(null);
+                        txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -372,6 +473,7 @@ public class Budget extends AppCompatActivity {
                                     }
                                 }
                             }
+
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
