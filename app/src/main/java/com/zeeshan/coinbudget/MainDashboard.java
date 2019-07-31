@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -26,6 +27,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -43,6 +45,14 @@ import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -84,6 +94,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainDashboard extends AppCompatActivity {
+
 
     DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount, databaseTransaction;
     FirebaseAuth firebaseAuth;
@@ -139,7 +150,7 @@ public class MainDashboard extends AppCompatActivity {
     Double totalAmountInBank = 0.0, totalAmountInBank2 = 0.0,
             totalTransactionAmount = 0.0, totalAmountInBank3 = 0.0;
 
-    CardView cardView1, cardView2, cardView3,cardView4;
+    CardView cardView1, cardView2, cardView3, cardView4;
     TextView txtRemainingBudget1, txtRemainingBudget2, txtRemainingBudget3,
             txtRemainingDays1, txtRemainingDays2, txtRemainingDays3,
             txtAverageBudget1, txtAverageBudget2, txtAverageBudget3;
@@ -149,12 +160,118 @@ public class MainDashboard extends AppCompatActivity {
     long dayCount2 = 0;
     long dayCount3 = 0;
 
+    AdView mAdView;
+    InterstitialAd interstitialAd;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(),Settings.Secure.ANDROID_ID);
 
         setContentView(R.layout.activity_main_dashboard);
         init();
+
+        //Ads Setup
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(android_id)
+                .build();
+
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+            }
+
+            @Override
+            public void onAdFailedToLoad(int i) {
+                Log.d("ADMOB_ERROR_CODE", "admob error code: " + i);
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                super.onAdLeftApplication();
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+            }
+        });
+        mAdView.loadAd(adRequest);
+
+
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+        interstitialAd.loadAd(new AdRequest.Builder().build());
+        btnAddNewTransaction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(interstitialAd.isLoaded()){
+                    interstitialAd.show();
+                }else{
+                    Log.d("TAG","The InterstitialAd wasn't loaded yet.");
+                }
+            }
+        });
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Code to be executed when an ad request fails.
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when the ad is displayed.
+            }
+
+            @Override
+            public void onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            @Override
+            public void onAdClosed() {
+                interstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+        });
+
+
+
 
         cardView1.setVisibility(View.GONE);
         cardView2.setVisibility(View.GONE);
@@ -467,82 +584,6 @@ public class MainDashboard extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
-                    case R.id.bank:
-                        txtAccountBalance = dialogBank.findViewById(R.id.txtAccountBalance);
-                        txtOR = dialogBank.findViewById(R.id.txtOR);
-                        edAmountBank = dialogBank.findViewById(R.id.ed_AmountBank);
-                        edDateBank = dialogBank.findViewById(R.id.ed_DateBank);
-                        btnSelectDateBank = dialogBank.findViewById(R.id.btnSelectBankDate);
-                        btnAddBankAmount = dialogBank.findViewById(R.id.btnAddBankAmount);
-                        btnAddBankAccount = dialogBank.findViewById(R.id.btnAddBankAccount);
-                        btnAddLoanAccount = dialogBank.findViewById(R.id.btnAddLoanAccount);
-                        btnAddAdditionalAccount = dialogBank.findViewById(R.id.btnAddAdditionalAccount);
-                        if (!isPremium) {
-                            txtOR.setVisibility(View.GONE);
-                            btnAddLoanAccount.setVisibility(View.GONE);
-                            btnAddBankAccount.setVisibility(View.GONE);
-                            btnAddAdditionalAccount.setVisibility(View.GONE);
-                        }
-                        databaseBankAccount.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                totalAccountBalance = 0.0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    BankAccount bankAccount = snapshot.getValue(BankAccount.class);
-                                    if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
-                                        totalAccountBalance += Double.parseDouble(bankAccount.getAmount());
-                                    }
-                                }
-                                if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
-                                }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-
-                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month + 1 + "/" + day + "/" + year;
-                                edIncomeDate.setText(Date);
-                            }
-                        });
-                        btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                datePickerDialog.show();
-                            }
-                        });
-                        btnAddBankAmount.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                String accountId = databaseBankAccount.push().getKey();
-                                String userId = firebaseUser.getUid();
-                                String amount = edAmountBank.getText().toString().trim();
-                                String date = edDateBank.getText().toString().trim();
-                                if (TextUtils.isEmpty(amount)) {
-                                    Toast.makeText(MainDashboard.this, "Please enter amount", Toast.LENGTH_SHORT).show();
-                                } else if (TextUtils.isEmpty(date)) {
-                                    Toast.makeText(MainDashboard.this, "Please select date", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    BankAccount bankAccount = new BankAccount(accountId, userId, amount, date);
-                                    databaseBankAccount.child(accountId).setValue(bankAccount);
-                                    Toast.makeText(MainDashboard.this, "Amount Added", Toast.LENGTH_SHORT).show();
-                                    edAmountBank.setText(null);
-                                    edDateBank.setText(null);
-                                    dialogBank.dismiss();
-                                }
-                            }
-                        });
-                        dialogBank.show();
-                        break;
                     case R.id.budget:
                         txtTotalIncomeBudget = dialogBudget.findViewById(R.id.txtTotalIncomeBudget);
                         txtTotalEstimatedExpenseBudget = dialogBudget.findViewById(R.id.txtEstimatedExpensesBudget);
@@ -636,6 +677,82 @@ public class MainDashboard extends AppCompatActivity {
                         txtTotalEstimatedExpenseBudget.setText(null);
                         txtTotalIncomeBudget.setText(null);
                         dialogBudget.show();
+                        break;
+                    case R.id.bank:
+                        txtAccountBalance = dialogBank.findViewById(R.id.txtAccountBalance);
+                        txtOR = dialogBank.findViewById(R.id.txtOR);
+                        edAmountBank = dialogBank.findViewById(R.id.ed_AmountBank);
+                        edDateBank = dialogBank.findViewById(R.id.ed_DateBank);
+                        btnSelectDateBank = dialogBank.findViewById(R.id.btnSelectBankDate);
+                        btnAddBankAmount = dialogBank.findViewById(R.id.btnAddBankAmount);
+                        btnAddBankAccount = dialogBank.findViewById(R.id.btnAddBankAccount);
+                        btnAddLoanAccount = dialogBank.findViewById(R.id.btnAddLoanAccount);
+                        btnAddAdditionalAccount = dialogBank.findViewById(R.id.btnAddAdditionalAccount);
+                        if (!isPremium) {
+                            txtOR.setVisibility(View.GONE);
+                            btnAddLoanAccount.setVisibility(View.GONE);
+                            btnAddBankAccount.setVisibility(View.GONE);
+                            btnAddAdditionalAccount.setVisibility(View.GONE);
+                        }
+                        databaseBankAccount.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                totalAccountBalance = 0.0;
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    BankAccount bankAccount = snapshot.getValue(BankAccount.class);
+                                    if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
+                                        totalAccountBalance += Double.parseDouble(bankAccount.getAmount());
+                                    }
+                                }
+                                if (totalAccountBalance == null) {
+                                    txtAccountBalance.setText("0.00");
+                                }
+                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+
+                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
+                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = (month) + 1 + "/" + day + "/" + year;
+                                edDateBank.setText(Date);
+                            }
+                        });
+                        btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                datePickerDialog.show();
+                            }
+                        });
+                        btnAddBankAmount.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String accountId = databaseBankAccount.push().getKey();
+                                String userId = firebaseUser.getUid();
+                                String amount = edAmountBank.getText().toString().trim();
+                                String date = edDateBank.getText().toString().trim();
+                                if (TextUtils.isEmpty(amount)) {
+                                    Toast.makeText(MainDashboard.this, "Please enter amount", Toast.LENGTH_SHORT).show();
+                                } else if (TextUtils.isEmpty(date)) {
+                                    Toast.makeText(MainDashboard.this, "Please select date", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    BankAccount bankAccount = new BankAccount(accountId, userId, amount, date);
+                                    databaseBankAccount.child(accountId).setValue(bankAccount);
+                                    Toast.makeText(MainDashboard.this, "Amount Added", Toast.LENGTH_SHORT).show();
+                                    edAmountBank.setText(null);
+                                    edDateBank.setText(null);
+                                    dialogBank.dismiss();
+                                }
+                            }
+                        });
+                        dialogBank.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -795,6 +912,11 @@ public class MainDashboard extends AppCompatActivity {
         });
     }
 
+    private void loadAd(){
+        if(!interstitialAd.isLoaded()){
+            interstitialAd.loadAd( new AdRequest.Builder().build());
+        }
+    }
     private void hideItem() {
         navigationView = findViewById(R.id.navigationView);
         Menu nav_Menu = navigationView.getMenu();
@@ -1179,5 +1301,6 @@ public class MainDashboard extends AppCompatActivity {
         databaseEstimatedExpense = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
         databaseRecurringExpense = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
 
+        mAdView = findViewById(R.id.adView);
     }
 }
