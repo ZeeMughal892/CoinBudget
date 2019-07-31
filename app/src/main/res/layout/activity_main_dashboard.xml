@@ -75,6 +75,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
@@ -322,6 +323,27 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardViewAd"
+                    android:layout_width="match_parent"
+                    android:layout_height="175dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    app:layout_constraintEnd_toEndOf="@id/cardsContainer"
+                    app:layout_constraintStart_toStartOf="@id/cardsContainer"
+                    app:layout_constraintTop_toBottomOf="@id/cardViewAd">
+
+                    <com.google.android.gms.ads.NativeExpressAdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                        android:id="@+id/nativeExpressAd"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        ads:adSize="300x220"
+                        ads:adUnitId="@string/Native_Ads" />
+
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
                     android:id="@+id/cardViewIncome3"
                     android:layout_width="match_parent"
                     android:layout_height="175dp"
@@ -331,7 +353,7 @@
                     android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="@id/cardsContainer"
                     app:layout_constraintStart_toStartOf="@id/cardsContainer"
-                    app:layout_constraintTop_toBottomOf="@id/cardViewIncome2">
+                    app:layout_constraintTop_toBottomOf="@id/cardViewAd">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -612,10 +634,11 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             ads:adSize="BANNER"
-            ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
+            ads:adUnitId="@string/Banner_ad_unit_id"
             ads:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
             ads:layout_constraintEnd_toEndOf="parent"
             ads:layout_constraintStart_toStartOf="parent" />
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigationView"
             android:layout_width="match_parent"
@@ -635,9 +658,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        >
-
+        android:layout_gravity="start">
 
 
         <com.google.android.material.navigation.NavigationView

@@ -4,6 +4,7 @@
     package="com.zeeshan.coinbudget">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
@@ -15,6 +16,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/AdMob_app_id"/>
+        <receiver android:name=".utils.AlarmReceiver" />
+
+
         <activity android:name=".BudgetSummary"
             android:screenOrientation="landscape" />
         <activity
@@ -50,13 +60,7 @@
             android:name=".MainDashboard"
             android:launchMode="singleTask" />
 
-        <meta-data
-            android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
-        <receiver android:name=".utils.AlarmReceiver" />
+
     </application>
 
 </manifest>

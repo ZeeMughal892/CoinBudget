@@ -1,7 +1,6 @@
 package com.zeeshan.coinbudget;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,8 +9,6 @@ import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
@@ -24,12 +21,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.hardware.camera2.TotalCaptureResult;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,17 +38,14 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -67,7 +58,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.zeeshan.coinbudget.APICommunicator.APICurrency;
-import com.zeeshan.coinbudget.adapter.MainAdapter;
 import com.zeeshan.coinbudget.interfaces.CurrencyService;
 import com.zeeshan.coinbudget.model.BankAccount;
 import com.zeeshan.coinbudget.model.CountryModel;
@@ -79,15 +69,17 @@ import com.zeeshan.coinbudget.model.User;
 import com.zeeshan.coinbudget.utils.AlarmReceiver;
 import com.zeeshan.coinbudget.utils.AppUtils;
 
-import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -160,116 +152,49 @@ public class MainDashboard extends AppCompatActivity {
     long dayCount2 = 0;
     long dayCount3 = 0;
 
-    AdView mAdView;
-    InterstitialAd interstitialAd;
+    private AdView adView;
+    private InterstitialAd interstitialAd;
+    private NativeExpressAdView nativeExpressAdView;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(),Settings.Secure.ANDROID_ID);
-
         setContentView(R.layout.activity_main_dashboard);
+        prepareAd();
+        @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
         init();
 
-        //Ads Setup
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+        ScheduledExecutorService scheduledExecutorService= Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(interstitialAd.isLoaded()){
+                            interstitialAd.show();
+                        }else{
+                            //Toast.makeText(MainDashboard.this, "Interstitial Ad Not Loaded", Toast.LENGTH_SHORT).show();
+                        }
+                        prepareAd();
+                    }
+                });
             }
-        });
+        },30,30, TimeUnit.SECONDS);
+
+
         AdView adView = new AdView(this);
         adView.setAdSize(AdSize.BANNER);
-        adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+        adView.setAdUnitId(String.valueOf(R.string.Banner_ad_unit_id));
 
-        mAdView = findViewById(R.id.adView);
+       adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder()
                 .addTestDevice(android_id)
                 .build();
 
-        mAdView.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                super.onAdClosed();
-            }
-
-            @Override
-            public void onAdFailedToLoad(int i) {
-                Log.d("ADMOB_ERROR_CODE", "admob error code: " + i);
-            }
-
-            @Override
-            public void onAdLeftApplication() {
-                super.onAdLeftApplication();
-            }
-
-            @Override
-            public void onAdOpened() {
-                super.onAdOpened();
-            }
-
-            @Override
-            public void onAdLoaded() {
-                super.onAdLoaded();
-            }
-
-            @Override
-            public void onAdClicked() {
-                super.onAdClicked();
-            }
-
-            @Override
-            public void onAdImpression() {
-                super.onAdImpression();
-            }
-        });
-        mAdView.loadAd(adRequest);
-
-
-        interstitialAd = new InterstitialAd(this);
-        interstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
-        interstitialAd.loadAd(new AdRequest.Builder().build());
-        btnAddNewTransaction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(interstitialAd.isLoaded()){
-                    interstitialAd.show();
-                }else{
-                    Log.d("TAG","The InterstitialAd wasn't loaded yet.");
-                }
-            }
-        });
-        interstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                // Code to be executed when an ad finishes loading.
-            }
-
-            @Override
-            public void onAdFailedToLoad(int errorCode) {
-                // Code to be executed when an ad request fails.
-            }
-
-            @Override
-            public void onAdOpened() {
-                // Code to be executed when the ad is displayed.
-            }
-
-            @Override
-            public void onAdClicked() {
-                // Code to be executed when the user clicks on an ad.
-            }
-
-            @Override
-            public void onAdLeftApplication() {
-                // Code to be executed when the user has left the app.
-            }
-
-            @Override
-            public void onAdClosed() {
-                interstitialAd.loadAd(new AdRequest.Builder().build());
-            }
-        });
-
+        adView.loadAd(adRequest);
+        nativeExpressAdView.loadAd(new AdRequest.Builder().addTestDevice(android_id).build());
 
 
 
@@ -912,11 +837,12 @@ public class MainDashboard extends AppCompatActivity {
         });
     }
 
-    private void loadAd(){
-        if(!interstitialAd.isLoaded()){
-            interstitialAd.loadAd( new AdRequest.Builder().build());
-        }
+    public void prepareAd() {
+        interstitialAd=new InterstitialAd(this);
+        interstitialAd.setAdUnitId(getString(R.string.Interstitial_ad_unit_id));
+        interstitialAd.loadAd(new AdRequest.Builder().build());
     }
+
     private void hideItem() {
         navigationView = findViewById(R.id.navigationView);
         Menu nav_Menu = navigationView.getMenu();
@@ -1301,6 +1227,7 @@ public class MainDashboard extends AppCompatActivity {
         databaseEstimatedExpense = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
         databaseRecurringExpense = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
 
-        mAdView = findViewById(R.id.adView);
+        adView = findViewById(R.id.adView);
+        nativeExpressAdView=findViewById(R.id.nativeExpressAd);
     }
 }
