@@ -28,6 +28,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -39,11 +43,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.zeeshan.coinbudget.adapter.EstimatedDetailAdapter;
+import com.zeeshan.coinbudget.adapter.TransactionAdapter;
 import com.zeeshan.coinbudget.model.BankAccount;
 import com.zeeshan.coinbudget.model.EstimatedExpenses;
 import com.zeeshan.coinbudget.model.ExpenseOverview;
 import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Savings;
+import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,40 +74,50 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
 
-    Dialog  dialogBank, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
+    Dialog dialogBank, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
 
-    Button btnRecurringExpense, btnEstimatedExpense, btnSavingDetails, btnAddSavings, btnIncomeDetails, btnSelectGoalDate, btnSelectDateBank, 
+    Button btnRecurringExpense, btnEstimatedExpense, btnSavingDetails, btnAddSavings, btnIncomeDetails, btnSelectGoalDate, btnSelectDateBank,
             btnAddIncome, btnSelectDateIncome, btnAddBankAmount, btnAddBankAccount, btnAddLoanAccount, btnAddAdditionalAccount;
 
     TextView txtTotalIncomeBudget, txtTotalRecurringExpenseBudget, txtTotalEstimatedExpenseBudget, txtTotalRemainingAmountBudget, txtAccountBalance, txtOR;
 
-    EditText edEmail,  edPassword, edAmountBank, edDateBank,
+    EditText edEmail, edPassword, edAmountBank, edDateBank,
             edIncomeAmount, edIncomeDescription, edIncomeDate, edSavingDate, edSavingAmount, edSavingTitle;
 
-    Spinner  spinnerFrequencyIncome;
+    Spinner spinnerFrequencyIncome;
 
-    String format;
+    String format, userCurrency;
     ProgressBar progressBarCurrency, progressBarBudget;
     private DatePickerDialog datePickerDialog;
 
-    private int hourAlarm, minuteAlarm;
-    private String fullName, userName, pin, currency, payFrequency;
     private Boolean isPremium = false;
-    private Double totalAccountBalance, totalRemainingBudget = 0.00;
+    private Double totalAccountBalance = 0.00;
 
     int total = 0;
     Double totalExtraIncome = 0.0;
     Double totalRecurring = 0.0;
     Double totalIncome = 0.0;
     Double totalEstimated = 0.0;
+
+    public static final int ITEMS_PER_AD = 4;
+    private List<Object> recyclerItems = new ArrayList<>();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_estimated_expenses_details);
         init();
         setUpToolbar();
+
+        recyclerViewEstimatedDetails.setHasFixedSize(true);
+        recyclerViewEstimatedDetails.setLayoutManager(new LinearLayoutManager(this));
+        loadCurrency();
+
+        MobileAds.initialize(EstimatedExpensesDetails.this, getString(R.string.AdMob_app_id));
         loadEstimatedExpense();
-        bottomNavigationView.setSelectedItemId(R.id.expenses);
+
+
         dialogBank = new Dialog(EstimatedExpensesDetails.this);
         dialogBank.setContentView(R.layout.dialog_bank);
         dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -121,6 +137,8 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
         dialogSavings = new Dialog(EstimatedExpensesDetails.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        bottomNavigationView.setSelectedItemId(R.id.expenses);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -156,9 +174,9 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                     }
                                 }
                                 if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
+                                    txtAccountBalance.setText(userCurrency+" 0.00");
                                 }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                                txtAccountBalance.setText(userCurrency+" "+totalAccountBalance);
                             }
 
                             @Override
@@ -223,12 +241,12 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                         totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                                txtTotalEstimatedExpenseBudget.setText(userCurrency+ " "+totalEstimated);
                             }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(com.zeeshan.coinbudget.EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                 progressBarBudget.setVisibility(View.INVISIBLE);
                             }
                         });
@@ -237,17 +255,17 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 totalIncome = 0.0;
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    Income income = snapshot.getValue(Income.class);
                                     if (income.getUserID().equals(firebaseUser.getUid())) {
                                         totalIncome += Double.parseDouble(income.getIncomeAmount());
                                     }
                                 }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                                txtTotalIncomeBudget.setText(userCurrency+ " "+totalIncome);
                             }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(com.zeeshan.coinbudget.EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                 progressBarBudget.setVisibility(View.INVISIBLE);
                             }
                         });
@@ -265,7 +283,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(com.zeeshan.coinbudget.EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                 progressBarBudget.setVisibility(View.INVISIBLE);
                             }
                         });
@@ -279,18 +297,20 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+                                txtTotalRecurringExpenseBudget.setText(userCurrency+ " " + totalRecurring);
+                                String[] incomeBudget = txtTotalIncomeBudget.getText().toString().split(userCurrency);
+                                String[] estimatedExpenseBudget = txtTotalEstimatedExpenseBudget.getText().toString().split(userCurrency);
+                                String[] recurringExpenseBudget = txtTotalRecurringExpenseBudget.getText().toString().split(userCurrency);
+                                Double totalRemainingBudget = (Double.parseDouble(incomeBudget[1]) + totalExtraIncome)
+                                        - (Double.parseDouble(estimatedExpenseBudget[1]) +  Double.parseDouble(recurringExpenseBudget[1]));
 
-                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
+                                txtTotalRemainingAmountBudget.setText(userCurrency+ " " + totalRemainingBudget);
+                                progressBarBudget.setVisibility(View.GONE);
                             }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(com.zeeshan.coinbudget.EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                 progressBarBudget.setVisibility(View.INVISIBLE);
                             }
                         });
@@ -298,6 +318,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                         txtTotalRecurringExpenseBudget.setText(null);
                         txtTotalEstimatedExpenseBudget.setText(null);
                         txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -313,7 +334,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edIncomeDate.setText(Date);
                             }
                         });
@@ -390,7 +411,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edSavingDate.setText(Date);
                             }
                         });
@@ -441,6 +462,42 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
         });
     }
 
+    private void loadCurrency() {
+        databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                userCurrency = user.currency;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    private void getEstimatedExpenses() {
+        recyclerItems.addAll(estimatedExpensesList);
+    }
+
+    private void getBannerAds() {
+        for (int i = 0; i < recyclerItems.size(); i += ITEMS_PER_AD) {
+            final AdView adView = new AdView(EstimatedExpensesDetails.this);
+            adView.setAdSize(AdSize.BANNER);
+            adView.setAdUnitId(getString(R.string.Banner_ad_unit_id));
+            recyclerItems.add( i,adView);
+        }
+    }
+
+    private void loadBannerAds() {
+        for (int i = 0; i < recyclerItems.size(); i++) {
+            Object item = recyclerItems.get(i);
+            if (item instanceof AdView) {
+                final AdView adView = (AdView) item;
+                adView.loadAd(new AdRequest.Builder().build());
+            }
+        }
+    }
     private void loadEstimatedExpense() {
         databaseEstimatedExpenses.addValueEventListener(new ValueEventListener() {
             @Override
@@ -453,22 +510,21 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
 
                     }
                 }
-                estimatedDetailAdapter = new EstimatedDetailAdapter(estimatedExpensesList);
-                recyclerViewEstimatedDetails.setHasFixedSize(true);
-                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerViewEstimatedDetails.setLayoutManager(mLayoutManager);
-                recyclerViewEstimatedDetails.setItemAnimator(new DefaultItemAnimator());
+                getEstimatedExpenses();
+                getBannerAds();
+                loadBannerAds();
+                estimatedDetailAdapter = new EstimatedDetailAdapter(recyclerItems, userCurrency);
                 recyclerViewEstimatedDetails.setAdapter(estimatedDetailAdapter);
 
                 for (EstimatedExpenses estimatedExpenses : estimatedExpensesList) {
                     total += (Integer.parseInt(estimatedExpenses.getExpenseAmount()));
-                    txtTotalEstimatedAmount.setText(String.valueOf(total));
+                    txtTotalEstimatedAmount.setText(userCurrency+ " "+total);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(EstimatedExpensesDetails .this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(EstimatedExpensesDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -485,10 +541,12 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
             }
         });
     }
+
     @Override
     public void onBackPressed() {
 
     }
+
     private void init() {
         toolbar = findViewById(R.id.toolbar);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
@@ -497,7 +555,7 @@ public class EstimatedExpensesDetails extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         txtTotalEstimatedAmount = findViewById(R.id.txtTotalEstimatedAmount);
-        recyclerViewEstimatedDetails=findViewById(R.id.recyclerViewEstimatedDetails);
+        recyclerViewEstimatedDetails = findViewById(R.id.recyclerViewEstimatedDetails);
         progressBar = findViewById(R.id.progressBar);
         navigationView = findViewById(R.id.navigationView);
         expenseOverviewList = new ArrayList<>();

@@ -28,6 +28,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -44,6 +48,7 @@ import com.zeeshan.coinbudget.model.BankAccount;
 import com.zeeshan.coinbudget.model.ExpenseOverview;
 import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Savings;
+import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,18 +85,20 @@ public class IncomeDetails extends AppCompatActivity {
 
     Spinner   spinnerFrequencyIncome;
 
-    String format;
+    String format,userCurrency;
     ProgressBar progressBarCurrency, progressBarBudget;
     private DatePickerDialog datePickerDialog;
 
-    private int hourAlarm, minuteAlarm;
-    private String fullName, userName, pin, currency, payFrequency;
     private Boolean isPremium = false;
-    private Double totalAccountBalance, totalRemainingBudget = 0.00;
+    private Double totalAccountBalance = 0.00;
     Double totalExtraIncome = 0.0;
     Double totalRecurring = 0.0;
     Double totalIncome = 0.0;
     Double totalEstimated = 0.0;
+
+
+    public static final int ITEMS_PER_AD = 3;
+    private List<Object> recyclerItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +106,11 @@ public class IncomeDetails extends AppCompatActivity {
         setContentView(R.layout.activity_income_details);
         init();
         setUpToolbar();
+        loadCurrency();
+        recyclerViewIncomeDetails.setHasFixedSize(true);
+        recyclerViewIncomeDetails.setLayoutManager(new LinearLayoutManager(this));
+        MobileAds.initialize(IncomeDetails.this, getString(R.string.AdMob_app_id));
         loadIncomes();
-        bottomNavigationView.setSelectedItemId(R.id.savings);
         dialogBank = new Dialog(IncomeDetails.this);
         dialogBank.setContentView(R.layout.dialog_bank);
         dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -120,6 +130,8 @@ public class IncomeDetails extends AppCompatActivity {
         dialogSavings = new Dialog(IncomeDetails.this);
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        bottomNavigationView.setSelectedItemId(R.id.income);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -155,9 +167,9 @@ public class IncomeDetails extends AppCompatActivity {
                                     }
                                 }
                                 if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
+                                    txtAccountBalance.setText(userCurrency+" 0.00");
                                 }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                                txtAccountBalance.setText(userCurrency+" "+totalAccountBalance);
                             }
 
                             @Override
@@ -222,7 +234,7 @@ public class IncomeDetails extends AppCompatActivity {
                                         totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                                txtTotalEstimatedExpenseBudget.setText(userCurrency+" "+totalEstimated);
                             }
 
                             @Override
@@ -236,12 +248,12 @@ public class IncomeDetails extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 totalIncome = 0.0;
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    Income income = snapshot.getValue(Income.class);
                                     if (income.getUserID().equals(firebaseUser.getUid())) {
                                         totalIncome += Double.parseDouble(income.getIncomeAmount());
                                     }
                                 }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                                txtTotalIncomeBudget.setText(userCurrency+" "+totalIncome);
                             }
 
                             @Override
@@ -278,13 +290,15 @@ public class IncomeDetails extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+                                txtTotalRecurringExpenseBudget.setText(userCurrency+" " + totalRecurring);
+                                String[] incomeBudget = txtTotalIncomeBudget.getText().toString().split(userCurrency);
+                                String[] estimatedExpenseBudget = txtTotalEstimatedExpenseBudget.getText().toString().split(userCurrency);
+                                String[] recurringExpenseBudget = txtTotalRecurringExpenseBudget.getText().toString().split(userCurrency);
+                                Double totalRemainingBudget = (Double.parseDouble(incomeBudget[1]) + totalExtraIncome)
+                                        - (Double.parseDouble(estimatedExpenseBudget[1]) +  Double.parseDouble(recurringExpenseBudget[1]));
 
-                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
+                                txtTotalRemainingAmountBudget.setText(userCurrency+" " + totalRemainingBudget);
+                                progressBarBudget.setVisibility(View.GONE);
                             }
 
                             @Override
@@ -297,6 +311,7 @@ public class IncomeDetails extends AppCompatActivity {
                         txtTotalRecurringExpenseBudget.setText(null);
                         txtTotalEstimatedExpenseBudget.setText(null);
                         txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -437,6 +452,43 @@ public class IncomeDetails extends AppCompatActivity {
             }
         });
     }
+    private void loadCurrency() {
+        databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                userCurrency = user.currency;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(IncomeDetails.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void getIncomes() {
+        recyclerItems.addAll(incomeList);
+    }
+
+    private void getBannerAds() {
+        for (int i = 0; i < recyclerItems.size(); i += ITEMS_PER_AD) {
+            final AdView adView = new AdView(IncomeDetails.this);
+            adView.setAdSize(AdSize.BANNER);
+            adView.setAdUnitId(getString(R.string.Banner_ad_unit_id));
+            recyclerItems.add( i,adView);
+        }
+    }
+
+    private void loadBannerAds() {
+        for (int i = 0; i < recyclerItems.size(); i++) {
+            Object item = recyclerItems.get(i);
+            if (item instanceof AdView) {
+                final AdView adView = (AdView) item;
+                adView.loadAd(new AdRequest.Builder().build());
+            }
+        }
+    }
     private void loadIncomes() {
         databaseIncome.addValueEventListener(new ValueEventListener() {
             @Override
@@ -448,17 +500,16 @@ public class IncomeDetails extends AppCompatActivity {
                         incomeList.add(income);
                     }
                 }
-                incomeAdapter = new IncomeAdapter(incomeList);
-                recyclerViewIncomeDetails.setHasFixedSize(true);
-                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerViewIncomeDetails.setLayoutManager(mLayoutManager);
-                recyclerViewIncomeDetails.setItemAnimator(new DefaultItemAnimator());
+                getIncomes();
+                getBannerAds();
+                loadBannerAds();
+                incomeAdapter = new IncomeAdapter(recyclerItems,userCurrency);
                 recyclerViewIncomeDetails.setAdapter(incomeAdapter);
 
                 total=0.0;
                 for (Income income : incomeList) {
                     total += (Double.parseDouble(income.getIncomeAmount()));
-                    txtTotalIncome.setText(String.valueOf(total));
+                    txtTotalIncome.setText(userCurrency+" "+total);
                 }
             }
             @Override

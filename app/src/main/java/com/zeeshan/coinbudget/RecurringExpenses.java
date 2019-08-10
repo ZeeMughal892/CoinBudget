@@ -81,14 +81,12 @@ public class RecurringExpenses extends AppCompatActivity {
 
     Spinner spinnerFrequencyIncome;
 
-    String format;
+    String format, userCurrency;
     ProgressBar progressBarCurrency, progressBarBudget;
     private DatePickerDialog datePickerDialog;
 
-    private int hourAlarm, minuteAlarm;
-    private String fullName, userName, pin, currency, payFrequency;
     private Boolean isPremium = false;
-    private Double totalAccountBalance, totalRemainingBudget = 0.00;
+    private Double totalAccountBalance = 0.00;
     Double totalExtraIncome = 0.0;
     Double totalRecurring = 0.0;
     Double totalIncome = 0.0;
@@ -100,6 +98,7 @@ public class RecurringExpenses extends AppCompatActivity {
 
         init();
         setUpToolbar();
+        loadCurrency();
         progressBarRecurringExpenses.setVisibility(View.VISIBLE);
         dialogBank = new Dialog(RecurringExpenses.this);
         dialogBank.setContentView(R.layout.dialog_bank);
@@ -157,9 +156,9 @@ public class RecurringExpenses extends AppCompatActivity {
                                     }
                                 }
                                 if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
+                                    txtAccountBalance.setText(userCurrency+" 0.00");
                                 }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                                txtAccountBalance.setText(userCurrency+" "+totalAccountBalance);
                             }
 
                             @Override
@@ -224,7 +223,7 @@ public class RecurringExpenses extends AppCompatActivity {
                                         totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                                txtTotalEstimatedExpenseBudget.setText(userCurrency+" "+totalEstimated);
                             }
 
                             @Override
@@ -238,12 +237,12 @@ public class RecurringExpenses extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 totalIncome = 0.0;
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    Income income = snapshot.getValue(Income.class);
                                     if (income.getUserID().equals(firebaseUser.getUid())) {
                                         totalIncome += Double.parseDouble(income.getIncomeAmount());
                                     }
                                 }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                                txtTotalIncomeBudget.setText(userCurrency+" "+totalIncome);
                             }
 
                             @Override
@@ -280,13 +279,16 @@ public class RecurringExpenses extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+                                txtTotalRecurringExpenseBudget.setText(userCurrency+" " + totalRecurring);
 
-                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
+                                String[] incomeBudget = txtTotalIncomeBudget.getText().toString().split(userCurrency);
+                                String[] estimatedExpenseBudget = txtTotalEstimatedExpenseBudget.getText().toString().split(userCurrency);
+                                String[] recurringExpenseBudget = txtTotalRecurringExpenseBudget.getText().toString().split(userCurrency);
+                                Double totalRemainingBudget = (Double.parseDouble(incomeBudget[1]) + totalExtraIncome)
+                                        - (Double.parseDouble(estimatedExpenseBudget[1]) +  Double.parseDouble(recurringExpenseBudget[1]));
+
+                                txtTotalRemainingAmountBudget.setText(userCurrency+" " + totalRemainingBudget);
+                                progressBarBudget.setVisibility(View.GONE);
                             }
 
                             @Override
@@ -299,6 +301,7 @@ public class RecurringExpenses extends AppCompatActivity {
                         txtTotalRecurringExpenseBudget.setText(null);
                         txtTotalEstimatedExpenseBudget.setText(null);
                         txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -441,10 +444,22 @@ public class RecurringExpenses extends AppCompatActivity {
             }
         });
         loadLookups();
-
-
     }
 
+    private void loadCurrency() {
+        databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                userCurrency = user.currency;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(RecurringExpenses.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void loadLookups() {
         databaseUsers.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
             @Override

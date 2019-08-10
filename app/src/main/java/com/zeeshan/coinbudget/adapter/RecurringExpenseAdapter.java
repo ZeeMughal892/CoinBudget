@@ -97,7 +97,7 @@ public class RecurringExpenseAdapter extends RecyclerView.Adapter<RecurringExpen
                 datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String Date = day + "/" + month + "/" + year;
+                        String Date = month+1 + "/" + day + "/" + year;
                         ed_DateRecurring.setText(Date);
                     }
                 });

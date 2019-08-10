@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SignIn extends AppCompatActivity {
+
     List<AuthUI.IdpConfig> providers;
     private static final int MY_REQUEST_CODE = 7117;
     DatabaseReference databaseUsers;
@@ -28,11 +29,12 @@ public class SignIn extends AppCompatActivity {
         setContentView(R.layout.activity_sign_in);
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         if (firebaseUser != null) {
             startActivity(new Intent(SignIn.this, MainDashboard.class));
         } else {
 
-            providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(), new AuthUI.IdpConfig.FacebookBuilder().build());
+            providers = Arrays.asList(new AuthUI.IdpConfig.FacebookBuilder().build(), new AuthUI.IdpConfig.EmailBuilder().build());
             databaseUsers = FirebaseDatabase.getInstance().getReference("Users");
             showSignInOptions();
         }
@@ -58,8 +60,10 @@ public class SignIn extends AppCompatActivity {
         if (requestCode == MY_REQUEST_CODE) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == RESULT_OK) {
+
                 FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
                 FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
                 String userId = firebaseUser.getUid();
                 String fullName = firebaseUser.getDisplayName();
                 String email = firebaseUser.getEmail();

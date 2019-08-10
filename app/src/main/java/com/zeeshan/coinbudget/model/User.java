@@ -4,7 +4,7 @@ public class User {
 
     public String userID;
     public String fullName;
-    public String username;
+    public String email;
     public String currency;
     public String frequency;
     public String pin;
@@ -14,11 +14,10 @@ public class User {
     public User() {
     }
 
-
-    public User(String userID, String fullName, String username, String currency, String frequency, String pin, Boolean isPremium) {
+    public User(String userID, String fullName, String email, String currency, String frequency, String pin, Boolean isPremium) {
         this.userID = userID;
         this.fullName = fullName;
-        this.username = username;
+        this.email = email;
         this.currency = currency;
         this.frequency = frequency;
         this.pin = pin;
@@ -41,12 +40,12 @@ public class User {
         this.fullName = fullName;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getCurrency() {

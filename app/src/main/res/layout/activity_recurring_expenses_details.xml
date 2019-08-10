@@ -24,7 +24,7 @@
             android:layout_centerInParent="true"
             android:layout_gravity="center"
             android:fontFamily="@font/catamaran"
-            android:text="@string/details"
+            android:text="@string/recurring_expenses"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp" />
 

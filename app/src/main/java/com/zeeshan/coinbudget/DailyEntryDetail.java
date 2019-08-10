@@ -28,6 +28,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -46,6 +50,7 @@ import com.zeeshan.coinbudget.model.ExtraIncome;
 import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Savings;
 import com.zeeshan.coinbudget.model.Transactions;
+import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +74,7 @@ public class DailyEntryDetail extends AppCompatActivity {
     DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount;
     NavigationView navigationView;
     ProgressBar progressBar;
-    RecyclerView recyclerView;
+
     List<ExpenseOverview> expenseOverviewList;
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
@@ -91,11 +96,15 @@ public class DailyEntryDetail extends AppCompatActivity {
     ProgressBar progressBarCurrency, progressBarBudget;
     private DatePickerDialog datePickerDialog;
 
-    private int hourAlarm, minuteAlarm;
-    private String fullName, userName, pin, currency, payFrequency;
     private Boolean isPremium = false;
 
-    private Double totalAccountBalance, totalRemainingBudget=0.0;
+    public static final int ITEMS_PER_AD = 4;
+    private List<Object> recyclerItems = new ArrayList<>();
+
+    String message, userCurrency;
+
+
+    private Double totalAccountBalance = 0.0;
     Double totalExtraIncome = 0.0;
     Double totalRecurring = 0.0;
     Double totalIncome = 0.0;
@@ -106,21 +115,23 @@ public class DailyEntryDetail extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_daily_entry_detail);
         init();
+
         setUpToolbar();
+        loadCurrency();
         Intent intent = getIntent();
         LookupName = intent.getStringExtra("LookupName");
-        String message;
+
+        recyclerViewDailyEntry.setHasFixedSize(true);
+        recyclerViewDailyEntry.setLayoutManager(new LinearLayoutManager(this));
+        MobileAds.initialize(DailyEntryDetail.this, getString(R.string.AdMob_app_id));
+
         if (LookupName.equals("Extra Income")) {
-            message = "Total Extra Income = ";
-            txtTotalLabel.setText(message);
             loadExtraIncomeEntries();
         } else {
-            message = "Total Transaction Amount = ";
-            txtTotalLabel.setText(message);
             loadTransactionEntries();
         }
 
-        bottomNavigationView.setSelectedItemId(R.id.budget);
+
         dialogBank = new Dialog(DailyEntryDetail.this);
         dialogBank.setContentView(R.layout.dialog_bank);
         dialogBank.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -141,6 +152,7 @@ public class DailyEntryDetail extends AppCompatActivity {
         dialogSavings.setContentView(R.layout.dialog_savings);
         dialogSavings.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        bottomNavigationView.setSelectedItemId(R.id.expenses);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -176,9 +188,9 @@ public class DailyEntryDetail extends AppCompatActivity {
                                     }
                                 }
                                 if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
+                                    txtAccountBalance.setText(userCurrency+" 0.00");
                                 }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                                txtAccountBalance.setText(userCurrency +" "+totalAccountBalance);
                             }
 
                             @Override
@@ -191,7 +203,7 @@ public class DailyEntryDetail extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edDateBank.setText(Date);
                             }
                         });
@@ -243,7 +255,7 @@ public class DailyEntryDetail extends AppCompatActivity {
                                         totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                                txtTotalEstimatedExpenseBudget.setText(userCurrency +" "+totalEstimated);
                             }
 
                             @Override
@@ -257,12 +269,12 @@ public class DailyEntryDetail extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 totalIncome = 0.0;
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    Income income = snapshot.getValue(Income.class);
                                     if (income.getUserID().equals(firebaseUser.getUid())) {
                                         totalIncome += Double.parseDouble(income.getIncomeAmount());
                                     }
                                 }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                                txtTotalIncomeBudget.setText(userCurrency +" "+totalIncome);
                             }
 
                             @Override
@@ -299,13 +311,15 @@ public class DailyEntryDetail extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+                                txtTotalRecurringExpenseBudget.setText(userCurrency +" "+ totalRecurring);
+                                String[] incomeBudget = txtTotalIncomeBudget.getText().toString().split(userCurrency);
+                                String[] estimatedExpenseBudget = txtTotalEstimatedExpenseBudget.getText().toString().split(userCurrency);
+                                String[] recurringExpenseBudget = txtTotalRecurringExpenseBudget.getText().toString().split(userCurrency);
+                                Double totalRemainingBudget = (Double.parseDouble(incomeBudget[1]) + totalExtraIncome)
+                                        - (Double.parseDouble(estimatedExpenseBudget[1]) +  Double.parseDouble(recurringExpenseBudget[1]));
 
-                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
+                                txtTotalRemainingAmountBudget.setText(userCurrency +" "+ totalRemainingBudget);
+                                progressBarBudget.setVisibility(View.GONE);
                             }
 
                             @Override
@@ -318,6 +332,7 @@ public class DailyEntryDetail extends AppCompatActivity {
                         txtTotalRecurringExpenseBudget.setText(null);
                         txtTotalEstimatedExpenseBudget.setText(null);
                         txtTotalIncomeBudget.setText(null);
+                        dialogBudget.show();
                         break;
                     case R.id.income:
                         edIncomeAmount = dialogIncome.findViewById(R.id.ed_IncomeAmount);
@@ -333,7 +348,7 @@ public class DailyEntryDetail extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edIncomeDate.setText(Date);
                             }
                         });
@@ -410,7 +425,7 @@ public class DailyEntryDetail extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month+1 + "/" + day + "/" + year;
+                                String Date = month + 1 + "/" + day + "/" + year;
                                 edSavingDate.setText(Date);
                             }
                         });
@@ -461,6 +476,33 @@ public class DailyEntryDetail extends AppCompatActivity {
         });
     }
 
+    private void getExtraIncomeEntries() {
+        recyclerItems.addAll(extraIncomeList);
+    }
+
+    private void getTransactionEntries() {
+        recyclerItems.addAll(transactionList);
+    }
+
+    private void getBannerAds() {
+        for (int i = 0; i < recyclerItems.size(); i += ITEMS_PER_AD) {
+            final AdView adView = new AdView(DailyEntryDetail.this);
+            adView.setAdSize(AdSize.BANNER);
+            adView.setAdUnitId(getString(R.string.Banner_ad_unit_id));
+            recyclerItems.add( i,adView);
+        }
+    }
+
+    private void loadBannerAds() {
+        for (int i = 0; i < recyclerItems.size(); i++) {
+            Object item = recyclerItems.get(i);
+            if (item instanceof AdView) {
+                final AdView adView = (AdView) item;
+                adView.loadAd(new AdRequest.Builder().build());
+            }
+        }
+    }
+
     private void loadExtraIncomeEntries() {
         databaseExtraIncome.addValueEventListener(new ValueEventListener() {
             @Override
@@ -472,16 +514,16 @@ public class DailyEntryDetail extends AppCompatActivity {
                         extraIncomeList.add(extraIncome);
                     }
                 }
-                extraIncomeAdapter = new ExtraIncomeAdapter(extraIncomeList);
-                recyclerViewDailyEntry.setHasFixedSize(true);
-                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerViewDailyEntry.setLayoutManager(mLayoutManager);
-                recyclerViewDailyEntry.setItemAnimator(new DefaultItemAnimator());
+                message = "Total Extra Income = ";
+                txtTotalLabel.setText(message);
+                getExtraIncomeEntries();
+                getBannerAds();
+                loadBannerAds();
+                extraIncomeAdapter = new ExtraIncomeAdapter(recyclerItems,userCurrency);
                 recyclerViewDailyEntry.setAdapter(extraIncomeAdapter);
-
                 for (ExtraIncome extraIncome : extraIncomeList) {
                     total += (Integer.parseInt(extraIncome.getExtraAmount()));
-                    txtTotalAmount.setText(String.valueOf(total));
+                    txtTotalAmount.setText(userCurrency +" " + total);
                 }
             }
 
@@ -503,16 +545,16 @@ public class DailyEntryDetail extends AppCompatActivity {
                         transactionList.add(transactions);
                     }
                 }
-                transactionAdapter = new TransactionAdapter(transactionList);
-                recyclerViewDailyEntry.setHasFixedSize(true);
-                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerViewDailyEntry.setLayoutManager(mLayoutManager);
-                recyclerViewDailyEntry.setItemAnimator(new DefaultItemAnimator());
+                message = "Total Transaction Amount = ";
+                txtTotalLabel.setText(message);
+                getTransactionEntries();
+                getBannerAds();
+                loadBannerAds();
+                transactionAdapter = new TransactionAdapter(recyclerItems, userCurrency);
                 recyclerViewDailyEntry.setAdapter(transactionAdapter);
-
                 for (Transactions transactions : transactionList) {
                     total += (Integer.parseInt(transactions.getTransactionAmount()));
-                    txtTotalAmount.setText(String.valueOf(total));
+                    txtTotalAmount.setText(userCurrency +" " + total);
                 }
             }
 
@@ -522,7 +564,20 @@ public class DailyEntryDetail extends AppCompatActivity {
             }
         });
     }
+    private void loadCurrency() {
+        databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                userCurrency = user.currency;
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(DailyEntryDetail.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void setUpToolbar() {
         toolbar.setNavigationIcon(R.drawable.ic_chevron_left_black_24dp);
         toolbar.setTitle("");
@@ -543,7 +598,6 @@ public class DailyEntryDetail extends AppCompatActivity {
 
     private void init() {
         txtTotalLabel = findViewById(R.id.txtTotalLabel);
-        databaseTransaction = FirebaseDatabase.getInstance().getReference("Transaction");
         recyclerViewDailyEntry = findViewById(R.id.recyclerViewDailyDetails);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
@@ -558,6 +612,8 @@ public class DailyEntryDetail extends AppCompatActivity {
         expenseOverviewList = new ArrayList<>();
         btnAddExtraIncome = findViewById(R.id.btnAddExtraIncome);
         btnAddNewTransaction = findViewById(R.id.btnAddNewTransaction);
+
+        databaseTransaction = FirebaseDatabase.getInstance().getReference("Transaction");
         databaseUser = FirebaseDatabase.getInstance().getReference("Users");
         databaseBankAccount = FirebaseDatabase.getInstance().getReference("Bank Account");
         databaseSavings = FirebaseDatabase.getInstance().getReference("Saving Goals");

@@ -34,7 +34,11 @@ public class SplashScreen extends AppCompatActivity {
         imgLogo.startAnimation(animation);
 
 
-        intent = new Intent(SplashScreen.this, SignIn.class);
+        if (firebaseUser != null) {
+            intent = new Intent(SplashScreen.this, MainDashboard.class);
+        } else {
+            intent = new Intent(this, SignIn.class);
+        }
 
         Thread timer = new Thread() {
             public void run() {
@@ -51,6 +55,7 @@ public class SplashScreen extends AppCompatActivity {
         };
         timer.start();
     }
+
     @Override
     public void onBackPressed() {
 

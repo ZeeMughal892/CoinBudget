@@ -44,6 +44,7 @@ import com.zeeshan.coinbudget.model.ExtraIncome;
 import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Savings;
 import com.zeeshan.coinbudget.model.Transactions;
+import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +84,7 @@ public class Budget extends AppCompatActivity {
     EditText edEmail, edPassword, edAmountBank, edDateBank,
             edIncomeAmount, edIncomeDescription, edIncomeDate, edSavingDate, edSavingAmount, edSavingTitle;
     Spinner spinnerFrequencyIncome;
-    String format;
+    String format, userCurrency;
     ProgressBar progressBarCurrency;
     private DatePickerDialog datePickerDialog;
     private Double totalAccountBalance = 0.00;
@@ -99,6 +100,7 @@ public class Budget extends AppCompatActivity {
         init();
         setUpToolbar();
         setupBottomNav();
+        loadCurrency();
         loadTableValues();
         recyclerViewBudget.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -160,9 +162,9 @@ public class Budget extends AppCompatActivity {
                                     }
                                 }
                                 if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
+                                    txtAccountBalance.setText(userCurrency+" 0.00");
                                 }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                                txtAccountBalance.setText(userCurrency+" "+totalAccountBalance);
                             }
 
                             @Override
@@ -227,7 +229,7 @@ public class Budget extends AppCompatActivity {
                                         totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                                txtTotalEstimatedExpenseBudget.setText(userCurrency+" "+totalEstimated);
                             }
 
                             @Override
@@ -241,12 +243,12 @@ public class Budget extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 totalIncome = 0.0;
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    com.zeeshan.coinbudget.model.Income income = snapshot.getValue(com.zeeshan.coinbudget.model.Income.class);
+                                    Income income = snapshot.getValue(Income.class);
                                     if (income.getUserID().equals(firebaseUser.getUid())) {
                                         totalIncome += Double.parseDouble(income.getIncomeAmount());
                                     }
                                 }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                                txtTotalIncomeBudget.setText(userCurrency+" "+totalIncome);
                             }
 
                             @Override
@@ -283,13 +285,17 @@ public class Budget extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+                                txtTotalRecurringExpenseBudget.setText(userCurrency+" "+ totalRecurring);
 
-                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
+                                String[] incomeBudget = txtTotalIncomeBudget.getText().toString().split(userCurrency);
+                                String[] estimatedExpenseBudget = txtTotalEstimatedExpenseBudget.getText().toString().split(userCurrency);
+                                String[] recurringExpenseBudget = txtTotalRecurringExpenseBudget.getText().toString().split(userCurrency);
+
+                                Double totalRemainingBudget = (Double.parseDouble(incomeBudget[1]) + totalExtraIncome)
+                                        - (Double.parseDouble(estimatedExpenseBudget[1]) +  Double.parseDouble(recurringExpenseBudget[1]));
+
+                                txtTotalRemainingAmountBudget.setText(userCurrency+" "+ totalRemainingBudget);
+                                progressBarBudget.setVisibility(View.GONE);
                             }
 
                             @Override
@@ -443,7 +449,20 @@ public class Budget extends AppCompatActivity {
             }
         });
     }
+    private void loadCurrency() {
+        databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                userCurrency = user.currency;
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(Budget.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void loadTableValues() {
         databaseIncome.addValueEventListener(new ValueEventListener() {
             @Override

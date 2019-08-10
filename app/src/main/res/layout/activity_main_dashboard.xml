@@ -59,8 +59,10 @@
             android:padding="8dp"
             app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/toolbar">
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:layout_constraintVertical_bias="0.0">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cardsContainer"
@@ -69,13 +71,12 @@
                 android:layout_gravity="center_horizontal|top">
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardViewIncome1"
+                    android:id="@+id/cardViewIncome"
                     android:layout_width="match_parent"
                     android:layout_height="175dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
@@ -85,7 +86,7 @@
                         android:layout_height="match_parent">
 
                         <TextView
-                            android:id="@+id/txtRemainingBudget1"
+                            android:id="@+id/txtRemainingBudget"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
@@ -95,7 +96,7 @@
                             android:layout_marginRight="8dp"
                             android:fontFamily="@font/catamaran"
                             android:gravity="center"
-                            android:text="@string/_250"
+                            android:text="@string/_0_00"
                             android:textColor="@color/colorPrimary"
                             android:textSize="24sp"
                             android:textStyle="bold"
@@ -110,9 +111,9 @@
                             android:gravity="center"
                             android:text="@string/remaining_budget_until_next_paycheck"
                             android:textSize="12sp"
-                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget1"
-                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget1"
-                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget1" />
+                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget"
+                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget"
+                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -135,12 +136,12 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtRemainingDays1"
+                                    android:id="@+id/txtRemainingDays"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
                                     android:gravity="center"
-                                    android:text="@string/_15_days"
+                                    android:text="@string/_0_days"
                                     android:textColor="@color/colorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold"
@@ -155,9 +156,9 @@
                                     android:gravity="center"
                                     android:text="@string/until_next_paycheck"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays1"
-                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays1"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays1" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays"
+                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                             <androidx.constraintlayout.widget.ConstraintLayout
@@ -166,12 +167,12 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtAverageBudget1"
+                                    android:id="@+id/txtAverageBudget"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
                                     android:gravity="center"
-                                    android:text="@string/_250"
+                                    android:text="@string/_0_00"
                                     android:textColor="@color/colorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold"
@@ -186,9 +187,9 @@
                                     android:gravity="center"
                                     android:text="@string/average_budget"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget1"
-                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget1"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget1" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget"
+                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                         </LinearLayout>
@@ -196,7 +197,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardViewIncome2"
+                    android:id="@+id/cardViewIncome1"
                     android:layout_width="match_parent"
                     android:layout_height="175dp"
                     android:layout_marginStart="8dp"
@@ -205,14 +206,14 @@
                     android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="@id/cardsContainer"
                     app:layout_constraintStart_toStartOf="@id/cardsContainer"
-                    app:layout_constraintTop_toBottomOf="@id/cardViewIncome1">
+                    app:layout_constraintTop_toBottomOf="@id/cardViewIncome">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
                         <TextView
-                            android:id="@+id/txtRemainingBudget2"
+                            android:id="@+id/txtRemainingBudget1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
@@ -222,7 +223,7 @@
                             android:layout_marginRight="8dp"
                             android:fontFamily="@font/catamaran"
                             android:gravity="center"
-                            android:text="@string/_250"
+                            android:text="@string/_0_00"
                             android:textColor="@color/colorPrimary"
                             android:textSize="24sp"
                             android:textStyle="bold"
@@ -237,9 +238,9 @@
                             android:gravity="center"
                             android:text="@string/remaining_budget_until_next_paycheck"
                             android:textSize="12sp"
-                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget2"
-                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget2"
-                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget2" />
+                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget1"
+                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget1"
+                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget1" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -262,7 +263,7 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtRemainingDays2"
+                                    android:id="@+id/txtRemainingDays1"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
@@ -282,9 +283,9 @@
                                     android:gravity="center"
                                     android:text="@string/until_next_paycheck"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays2"
-                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays2"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays2" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays1"
+                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays1"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays1" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                             <androidx.constraintlayout.widget.ConstraintLayout
@@ -293,12 +294,12 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtAverageBudget2"
+                                    android:id="@+id/txtAverageBudget1"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
                                     android:gravity="center"
-                                    android:text="@string/_250"
+                                    android:text="@string/_0_00"
                                     android:textColor="@color/colorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold"
@@ -313,9 +314,9 @@
                                     android:gravity="center"
                                     android:text="@string/average_budget"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget2"
-                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget2"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget2" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget1"
+                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget1"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget1" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                         </LinearLayout>
@@ -329,14 +330,16 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="@id/cardsContainer"
                     app:layout_constraintStart_toStartOf="@id/cardsContainer"
-                    app:layout_constraintTop_toBottomOf="@id/cardViewAd">
+                    app:layout_constraintTop_toBottomOf="@id/cardViewIncome1">
 
                     <com.google.android.gms.ads.NativeExpressAdView xmlns:ads="http://schemas.android.com/apk/res-auto"
                         android:id="@+id/nativeExpressAd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         ads:adSize="300x220"
                         ads:adUnitId="@string/Native_Ads" />
 
@@ -344,7 +347,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardViewIncome3"
+                    android:id="@+id/cardViewIncome2"
                     android:layout_width="match_parent"
                     android:layout_height="175dp"
                     android:layout_marginStart="8dp"
@@ -360,7 +363,7 @@
                         android:layout_height="match_parent">
 
                         <TextView
-                            android:id="@+id/txtRemainingBudget3"
+                            android:id="@+id/txtRemainingBudget2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
@@ -370,7 +373,7 @@
                             android:layout_marginRight="8dp"
                             android:fontFamily="@font/catamaran"
                             android:gravity="center"
-                            android:text="@string/_250"
+                            android:text="@string/_0_00"
                             android:textColor="@color/colorPrimary"
                             android:textSize="24sp"
                             android:textStyle="bold"
@@ -385,9 +388,9 @@
                             android:gravity="center"
                             android:text="@string/remaining_budget_until_next_paycheck"
                             android:textSize="12sp"
-                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget3"
-                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget3"
-                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget3" />
+                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget2"
+                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget2"
+                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget2" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -410,7 +413,7 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtRemainingDays3"
+                                    android:id="@+id/txtRemainingDays2"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
@@ -430,9 +433,9 @@
                                     android:gravity="center"
                                     android:text="@string/until_next_paycheck"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays3"
-                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays3"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays3" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays2"
+                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays2"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays2" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                             <androidx.constraintlayout.widget.ConstraintLayout
@@ -441,12 +444,12 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtAverageBudget3"
+                                    android:id="@+id/txtAverageBudget2"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
                                     android:gravity="center"
-                                    android:text="@string/_250"
+                                    android:text="@string/_0_00"
                                     android:textColor="@color/colorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold"
@@ -461,9 +464,9 @@
                                     android:gravity="center"
                                     android:text="@string/average_budget"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget3"
-                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget3"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget3" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget2"
+                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget2"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget2" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                         </LinearLayout>
@@ -471,7 +474,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardViewIncome4"
+                    android:id="@+id/cardViewIncome3"
                     android:layout_width="match_parent"
                     android:layout_height="175dp"
                     android:layout_marginStart="8dp"
@@ -487,7 +490,7 @@
                         android:layout_height="match_parent">
 
                         <TextView
-                            android:id="@+id/txtRemainingBudget4"
+                            android:id="@+id/txtRemainingBudget3"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
@@ -497,7 +500,7 @@
                             android:layout_marginRight="8dp"
                             android:fontFamily="@font/catamaran"
                             android:gravity="center"
-                            android:text="@string/_250"
+                            android:text="@string/_0_00"
                             android:textColor="@color/colorPrimary"
                             android:textSize="24sp"
                             android:textStyle="bold"
@@ -512,9 +515,9 @@
                             android:gravity="center"
                             android:text="@string/remaining_budget_until_next_paycheck"
                             android:textSize="12sp"
-                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget4"
-                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget4"
-                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget4" />
+                            app:layout_constraintEnd_toEndOf="@+id/txtRemainingBudget3"
+                            app:layout_constraintStart_toStartOf="@+id/txtRemainingBudget3"
+                            app:layout_constraintTop_toBottomOf="@+id/txtRemainingBudget3" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -537,7 +540,7 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtRemainingDays4"
+                                    android:id="@+id/txtRemainingDays3"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
@@ -557,9 +560,9 @@
                                     android:gravity="center"
                                     android:text="@string/until_next_paycheck"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays4"
-                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays4"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays4" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtRemainingDays3"
+                                    app:layout_constraintStart_toStartOf="@+id/txtRemainingDays3"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtRemainingDays3" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                             <androidx.constraintlayout.widget.ConstraintLayout
@@ -568,12 +571,12 @@
                                 android:layout_weight="1">
 
                                 <TextView
-                                    android:id="@+id/txtAverageBudget4"
+                                    android:id="@+id/txtAverageBudget3"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/catamaran"
                                     android:gravity="center"
-                                    android:text="@string/_250"
+                                    android:text="@string/_0_00"
                                     android:textColor="@color/colorPrimary"
                                     android:textSize="18sp"
                                     android:textStyle="bold"
@@ -588,9 +591,9 @@
                                     android:gravity="center"
                                     android:text="@string/average_budget"
                                     android:textSize="12sp"
-                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget4"
-                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget4"
-                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget4" />
+                                    app:layout_constraintEnd_toEndOf="@+id/txtAverageBudget3"
+                                    app:layout_constraintStart_toStartOf="@+id/txtAverageBudget3"
+                                    app:layout_constraintTop_toBottomOf="@+id/txtAverageBudget3" />
                             </androidx.constraintlayout.widget.ConstraintLayout>
 
                         </LinearLayout>

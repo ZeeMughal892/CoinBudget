@@ -17,6 +17,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -74,8 +75,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -89,8 +93,10 @@ public class MainDashboard extends AppCompatActivity {
 
 
     DatabaseReference databaseUser, databaseIncome, databaseRecurringExpense, databaseEstimatedExpense, databaseExtraIncome, databaseSavings, databaseBankAccount, databaseTransaction;
+
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
+
     DrawerLayout drawerLayout;
     Toolbar toolbar;
     ActionBarDrawerToggle actionBarDrawerToggle;
@@ -98,7 +104,7 @@ public class MainDashboard extends AppCompatActivity {
     ProgressBar progressBar;
     BottomNavigationView bottomNavigationView;
     RecyclerView recyclerView;
-    List<ExpenseOverview> expenseOverviewList;
+
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
 
@@ -128,22 +134,27 @@ public class MainDashboard extends AppCompatActivity {
     int hourAlarm, minuteAlarm;
     String fullName, userName, pin, currency, payFrequency;
     Boolean isPremium = false;
+    String userCurrency;
 
-    Double totalAccountBalance = 0.0, totalRemainingBudget = 0.0, totalAverageExpense = 0.0,
+    Double totalAccountBalance = 0.0,
+            totalRemainingBudget = 0.0, totalAverageExpense = 0.0,
             totalRemainingBudget1 = 0.0, totalAverageExpense1 = 0.0,
             totalRemainingBudget2 = 0.0, totalAverageExpense2 = 0.0, totalExtraIncome2 = 0.0,
-            totalRemainingBudget3 = 0.0, totalAverageExpense3 = 0.0, totalExtraIncome3 = 0.0;
+            totalRemainingBudget3 = 0.0, totalAverageExpense3 = 0.0, totalExtraIncome3 = 0.0,
+            totalAmountInBank = 0.0, totalTransactionAmount = 0.0;
+
 
     List<Income> incomeList;
     List<Transactions> transactionsList;
     List<BankAccount> bankAccountList;
     List<com.zeeshan.coinbudget.model.ExtraIncome> extraIncomeList;
+    List<ExpenseOverview> expenseOverviewList;
 
-    Double totalAmountInBank = 0.0, totalAmountInBank2 = 0.0,
-            totalTransactionAmount = 0.0, totalAmountInBank3 = 0.0;
 
-    CardView cardView1, cardView2, cardView3, cardView4;
-    TextView txtRemainingBudget1, txtRemainingBudget2, txtRemainingBudget3,
+    CardView cardView, cardView1, cardView2, cardView3;
+
+    TextView txtRemainingBudget, txtRemainingDays, txtAverageBudget,
+            txtRemainingBudget1, txtRemainingBudget2, txtRemainingBudget3,
             txtRemainingDays1, txtRemainingDays2, txtRemainingDays3,
             txtAverageBudget1, txtAverageBudget2, txtAverageBudget3;
 
@@ -165,30 +176,49 @@ public class MainDashboard extends AppCompatActivity {
 
         init();
 
-        ScheduledExecutorService scheduledExecutorService= Executors.newSingleThreadScheduledExecutor();
+        setUpToolbar();
+        loadDashboard();
+        startAlarmBroadcastReceiver(MainDashboard.this);
+        getAllCurrencies();
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(interstitialAd.isLoaded()){
+                        loadCards();
+                    }
+                });
+            }
+        }, 100, 100, TimeUnit.MILLISECONDS);
+
+        loadValues();
+        progressBar.setVisibility(View.GONE);
+        ScheduledExecutorService scheduledExecutorService1 = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService1.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (interstitialAd.isLoaded()) {
                             interstitialAd.show();
-                        }else{
-                            //Toast.makeText(MainDashboard.this, "Interstitial Ad Not Loaded", Toast.LENGTH_SHORT).show();
+                        } else {
                         }
                         prepareAd();
                     }
                 });
             }
-        },30,30, TimeUnit.SECONDS);
+        }, 45, 45, TimeUnit.SECONDS);
 
 
-        AdView adView = new AdView(this);
+        adView = new AdView(this);
         adView.setAdSize(AdSize.BANNER);
         adView.setAdUnitId(String.valueOf(R.string.Banner_ad_unit_id));
 
-       adView = findViewById(R.id.adView);
+        adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder()
                 .addTestDevice(android_id)
                 .build();
@@ -196,14 +226,6 @@ public class MainDashboard extends AppCompatActivity {
         adView.loadAd(adRequest);
         nativeExpressAdView.loadAd(new AdRequest.Builder().addTestDevice(android_id).build());
 
-
-
-        cardView1.setVisibility(View.GONE);
-        cardView2.setVisibility(View.GONE);
-        cardView3.setVisibility(View.GONE);
-        setUpToolbar();
-        loadDashboard();
-        progressBar.setVisibility(View.GONE);
 
         dialogFrequency = new Dialog(MainDashboard.this);
         dialogFrequency.setContentView(R.layout.dialog_frequency);
@@ -251,7 +273,7 @@ public class MainDashboard extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
                                 edFullName.setText(user.fullName);
-                                edEmail.setText(user.username);
+                                edEmail.setText(user.email);
                                 pin = user.pin;
                                 currency = user.currency;
                                 isPremium = user.isPremium;
@@ -269,7 +291,6 @@ public class MainDashboard extends AppCompatActivity {
                                 String userId = firebaseUser.getUid();
                                 String email = edEmail.getText().toString().trim();
                                 String fullName = edFullName.getText().toString().trim();
-                                String password = edPassword.getText().toString().trim();
                                 User user = new User(userId, fullName, email, currency, payFrequency, pin, isPremium);
                                 databaseUser.child(userId).setValue(user);
                                 Toast.makeText(MainDashboard.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
@@ -282,8 +303,34 @@ public class MainDashboard extends AppCompatActivity {
                         spinnerCurrency = dialogCurrency.findViewById(R.id.spinnerCurrency);
                         btnUpdateCurrency = dialogCurrency.findViewById(R.id.btnUpdateCurrency);
                         progressBarCurrency = dialogCurrency.findViewById(R.id.progress_barCurrency);
+                        List<String> currencyCodes = new ArrayList<>();
+                        for (Currency currency : getAllCurrencies()) {
+                            currencyCodes.add(currency.getCurrencyCode());
+                        }
 
-                        final CurrencyService currencyService = APICurrency.getClient().create(CurrencyService.class);
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainDashboard.this, android.R.layout.simple_spinner_dropdown_item, currencyCodes);
+                        spinnerCurrency.setAdapter(arrayAdapter);
+                        databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                User user = dataSnapshot.getValue(User.class);
+                                spinnerCurrency.setSelection(((ArrayAdapter) spinnerCurrency.getAdapter()).getPosition(user.currency));
+                                fullName = user.fullName;
+                                userName = user.email;
+                                payFrequency = user.frequency;
+                                pin = user.pin;
+                                isPremium = user.isPremium;
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        progressBarCurrency.setVisibility(View.INVISIBLE);
+
+
+                      /*  final CurrencyService currencyService = APICurrency.getClient().create(CurrencyService.class);
                         Call<List<CountryModel>> call = currencyService.all();
                         call.enqueue(new Callback<List<CountryModel>>() {
                             @Override
@@ -296,26 +343,7 @@ public class MainDashboard extends AppCompatActivity {
                                         countryNames.add(countryModelList.get(i).getName());
                                         currencies.addAll(countryModelList.get(i).getCurrencies());
                                     }
-                                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainDashboard.this, android.R.layout.simple_spinner_dropdown_item, currencies);
-                                    spinnerCurrency.setAdapter(arrayAdapter);
-                                    databaseUser.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            User user = dataSnapshot.getValue(User.class);
-                                            spinnerCurrency.setSelection(((ArrayAdapter) spinnerCurrency.getAdapter()).getPosition(user.currency));
-                                            fullName = user.fullName;
-                                            userName = user.username;
-                                            payFrequency = user.frequency;
-                                            pin = user.pin;
-                                            isPremium = user.isPremium;
-                                        }
 
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                                            Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                    progressBarCurrency.setVisibility(View.INVISIBLE);
                                 }
                             }
 
@@ -323,7 +351,7 @@ public class MainDashboard extends AppCompatActivity {
                             public void onFailure(Call<List<CountryModel>> call, Throwable t) {
                                 Toast.makeText(MainDashboard.this, String.valueOf(t.getMessage()), Toast.LENGTH_SHORT).show();
                             }
-                        });
+                        });*/
 
                         btnUpdateCurrency.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -375,6 +403,7 @@ public class MainDashboard extends AppCompatActivity {
                             public void onClick(View view) {
                                 Intent intent = new Intent(MainDashboard.this, AlarmReceiver.class);
                                 intent.putExtra("notificationId", notificationId);
+                                intent.putExtra("title", "Reminder");
                                 intent.putExtra("notes", edNotesReminder.getText().toString().trim());
                                 final PendingIntent alarmIntent = PendingIntent.getBroadcast(MainDashboard.this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
                                 final AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -400,7 +429,7 @@ public class MainDashboard extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
                                 fullName = user.fullName;
-                                userName = user.username;
+                                userName = user.email;
                                 edPin.setText(user.pin);
                                 currency = user.currency;
                                 isPremium = user.isPremium;
@@ -526,7 +555,7 @@ public class MainDashboard extends AppCompatActivity {
                                         totalEstimated += Double.parseDouble(estimatedExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalEstimatedExpenseBudget.setText(String.valueOf(totalEstimated));
+                                txtTotalEstimatedExpenseBudget.setText(userCurrency + " " + totalEstimated);
                             }
 
                             @Override
@@ -545,7 +574,7 @@ public class MainDashboard extends AppCompatActivity {
                                         totalIncome += Double.parseDouble(income.getIncomeAmount());
                                     }
                                 }
-                                txtTotalIncomeBudget.setText(String.valueOf(totalIncome));
+                                txtTotalIncomeBudget.setText(userCurrency + " " + totalIncome);
                             }
 
                             @Override
@@ -582,13 +611,18 @@ public class MainDashboard extends AppCompatActivity {
                                         totalRecurring += Integer.parseInt(recurringExpenses.getExpenseAmount());
                                     }
                                 }
-                                txtTotalRecurringExpenseBudget.setText(String.valueOf(totalRecurring));
+                                txtTotalRecurringExpenseBudget.setText(userCurrency + " " + totalRecurring);
 
-                                Double totalRemainingBudget = Double.parseDouble(txtTotalIncomeBudget.getText().toString()) -
-                                        (Double.parseDouble(txtTotalEstimatedExpenseBudget.getText().toString()) +
-                                                Double.parseDouble(txtTotalRecurringExpenseBudget.getText().toString()));
-                                txtTotalRemainingAmountBudget.setText(String.valueOf(totalRemainingBudget));
-                                progressBarBudget.setVisibility(View.INVISIBLE);
+                                String[] incomeBudget = txtTotalIncomeBudget.getText().toString().split(userCurrency);
+                                String[] estimatedExpenseBudget = txtTotalEstimatedExpenseBudget.getText().toString().split(userCurrency);
+                                String[] recurringExpenseBudget = txtTotalRecurringExpenseBudget.getText().toString().split(userCurrency);
+
+
+                                Double totalRemainingBudget = (Double.parseDouble(incomeBudget[1]) + totalExtraIncome)
+                                        - (Double.parseDouble(estimatedExpenseBudget[1]) + Double.parseDouble(recurringExpenseBudget[1]));
+
+                                txtTotalRemainingAmountBudget.setText(userCurrency + " " + totalRemainingBudget);
+                                progressBarBudget.setVisibility(View.GONE);
                             }
 
                             @Override
@@ -630,9 +664,9 @@ public class MainDashboard extends AppCompatActivity {
                                     }
                                 }
                                 if (totalAccountBalance == null) {
-                                    txtAccountBalance.setText("0.00");
+                                    txtAccountBalance.setText(userCurrency + " 0.00");
                                 }
-                                txtAccountBalance.setText(String.valueOf(totalAccountBalance));
+                                txtAccountBalance.setText(userCurrency + " " + totalAccountBalance);
                             }
 
                             @Override
@@ -646,7 +680,7 @@ public class MainDashboard extends AppCompatActivity {
                         datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = (month) + 1 + "/" + day + "/" + year;
+                                String Date = (month + 1) + "/" + day + "/" + year;
                                 edDateBank.setText(Date);
                             }
                         });
@@ -837,8 +871,44 @@ public class MainDashboard extends AppCompatActivity {
         });
     }
 
+    public static List<Currency> getAllCurrencies() {
+        List<Currency> toret = new ArrayList<>();
+        Locale[] locs = Locale.getAvailableLocales();
+
+        for (Locale loc : locs) {
+            try {
+                Currency currency = Currency.getInstance(loc);
+
+                if (currency != null) {
+                    toret.add(currency);
+                }
+            } catch (Exception exc) {
+                // Locale not found
+            }
+        }
+
+        return toret;
+    }
+
+    public static void startAlarmBroadcastReceiver(Context context) {
+        final int notificationId = 1;
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.putExtra("notificationId", notificationId);
+        intent.putExtra("title", "Forget Something?");
+        intent.putExtra("notes", "Don't forget to enter your daily expenses!");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Calendar startTime = Calendar.getInstance();
+        //startTime.setTimeInMillis(System.currentTimeMillis());
+        startTime.set(Calendar.HOUR_OF_DAY, 20);
+        startTime.set(Calendar.MINUTE, 00);
+        startTime.set(Calendar.SECOND, 00);
+        long alarmStartTime = startTime.getTimeInMillis();
+        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
+    }
+
     public void prepareAd() {
-        interstitialAd=new InterstitialAd(this);
+        interstitialAd = new InterstitialAd(this);
         interstitialAd.setAdUnitId(getString(R.string.Interstitial_ad_unit_id));
         interstitialAd.loadAd(new AdRequest.Builder().build());
     }
@@ -851,12 +921,10 @@ public class MainDashboard extends AppCompatActivity {
 
     public void selectedTimeFormat(int hour) {
         if (hour == 0) {
-            hour += 12;
             format = "AM";
         } else if (hour == 12) {
             format = "PM";
         } else if (hour > 12) {
-            hour -= 12;
             format = "PM";
         } else {
             format = "AM";
@@ -872,6 +940,7 @@ public class MainDashboard extends AppCompatActivity {
                 if (isPremium.equals(user.getPremium())) {
                     hideItem();
                 }
+                userCurrency = user.currency;
             }
 
             @Override
@@ -881,13 +950,8 @@ public class MainDashboard extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        loadCards();
-    }
+    private void loadValues() {
 
-    private void loadCards() {
         databaseIncome.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -898,231 +962,7 @@ public class MainDashboard extends AppCompatActivity {
                         incomeList.add(income);
                     }
                 }
-                databaseTransaction.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        transactionsList.clear();
-                        totalTransactionAmount = 0.0;
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            Transactions transactions = snapshot.getValue(Transactions.class);
-                            if (firebaseUser.getUid().equals(transactions.getUserID())) {
-                                transactionsList.add(transactions);
-                            }
-                        }
-                        for (Transactions transactions : transactionsList) {
-                            totalTransactionAmount += Double.parseDouble(transactions.getTransactionAmount());
-                        }
-                        if (incomeList.size() >= 0) {
-                            cardView1.setVisibility(View.VISIBLE);
-                            databaseBankAccount.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    totalAmountInBank = 0.0;
 
-                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                        BankAccount bankAccount = snapshot.getValue(BankAccount.class);
-                                        if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
-                                            bankAccountList.add(bankAccount);
-                                        }
-                                    }
-                                    for (BankAccount bankAccount : bankAccountList) {
-                                        totalAmountInBank = Double.parseDouble(bankAccount.getAmount());
-                                    }
-                                    databaseExtraIncome.addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
-                                                if (firebaseUser.getUid().equals(extraIncome.getUserID())) {
-                                                    extraIncomeList.add(extraIncome);
-                                                }
-                                            }
-                                            for (com.zeeshan.coinbudget.model.ExtraIncome extraIncome : extraIncomeList) {
-                                                totalExtraIncome += Double.parseDouble(extraIncome.getExtraAmount());
-                                            }
-                                            Date today = new Date();
-                                            if (incomeList.size() == 0) {
-                                                Date nextDay = null;
-                                                nextDay = new Date();
-                                                dayCount = daysBetweenTwoDates(today, nextDay);
-                                                totalRemainingBudget = 0.0;
-                                                totalAverageExpense = 0.0;
-                                                totalRemainingBudget = (totalAmountInBank + totalExtraIncome) - totalTransactionAmount;
-                                                totalAverageExpense = (totalTransactionAmount) / transactionsList.size();
-
-                                                txtRemainingDays1.setText(dayCount + " days");
-                                                txtRemainingBudget1.setText("$ " + totalRemainingBudget);
-                                                txtAverageBudget1.setText("$ " + totalAverageExpense.shortValue());
-                                            } else if (incomeList.size() == 1) {
-                                                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-                                                Date nextDay1 = null;
-                                                try {
-                                                    nextDay1 = sdf.parse(incomeList.get(0).getDateOfIncome());
-                                                    dayCount1 = daysBetweenTwoDates(today, nextDay1);
-                                                } catch (ParseException e) {
-                                                    e.printStackTrace();
-                                                }
-                                                Double income1 = Double.parseDouble(incomeList.get(0).getIncomeAmount());
-                                                totalRemainingBudget1 = 0.0;
-                                                totalAverageExpense1 = 0.0;
-                                                totalRemainingBudget1 = (income1 + totalExtraIncome) - totalTransactionAmount;
-                                                totalAverageExpense1 = (totalTransactionAmount) / transactionsList.size();
-
-                                                txtRemainingDays1.setText(dayCount1 + " days");
-                                                txtRemainingBudget1.setText("$ " + totalRemainingBudget1);
-                                                txtAverageBudget1.setText("$ " + totalAverageExpense1.shortValue());
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                                            Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                    Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                        if (incomeList.size() == 2) {
-                            cardView1.setVisibility(View.VISIBLE);
-                            cardView2.setVisibility(View.VISIBLE);
-
-                            databaseBankAccount.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    totalAmountInBank2 = 0.0;
-
-                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                        BankAccount bankAccount = snapshot.getValue(BankAccount.class);
-                                        if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
-                                            bankAccountList.add(bankAccount);
-                                        }
-                                    }
-                                    for (BankAccount bankAccount : bankAccountList) {
-                                        totalAmountInBank2 += Double.parseDouble(bankAccount.getAmount());
-                                    }
-                                    databaseExtraIncome.addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
-                                                if (firebaseUser.getUid().equals(extraIncome.getUserID())) {
-                                                    extraIncomeList.add(extraIncome);
-                                                }
-                                            }
-                                            for (com.zeeshan.coinbudget.model.ExtraIncome extraIncome : extraIncomeList) {
-                                                totalExtraIncome2 += Double.parseDouble(extraIncome.getExtraAmount());
-                                            }
-
-                                            Date today = new Date();
-                                            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-                                            Date nextDay = null;
-                                            try {
-                                                nextDay = sdf.parse(incomeList.get(1).getDateOfIncome());
-                                                dayCount2 = daysBetweenTwoDates(today, nextDay);
-                                            } catch (ParseException e) {
-                                                e.printStackTrace();
-                                            }
-                                            Double income2 = Double.parseDouble(incomeList.get(1).getIncomeAmount());
-                                            totalRemainingBudget2 = 0.0;
-                                            totalAverageExpense2 = 0.0;
-                                            totalRemainingBudget2 = (totalExtraIncome2 + income2) - totalTransactionAmount;
-                                            totalAverageExpense2 = (totalTransactionAmount) / transactionsList.size();
-
-                                            txtRemainingDays2.setText(dayCount2 + " days");
-                                            txtRemainingBudget2.setText("$ " + totalRemainingBudget2);
-                                            txtAverageBudget2.setText("$ " + totalAverageExpense2.shortValue());
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                                            Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                    Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                        if (incomeList.size() > 2) {
-                            cardView1.setVisibility(View.VISIBLE);
-                            cardView2.setVisibility(View.VISIBLE);
-                            cardView3.setVisibility(View.VISIBLE);
-                            databaseBankAccount.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    totalAmountInBank3 = 0.0;
-
-                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                        BankAccount bankAccount = snapshot.getValue(BankAccount.class);
-                                        if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
-                                            bankAccountList.add(bankAccount);
-                                        }
-                                    }
-                                    for (BankAccount bankAccount : bankAccountList) {
-                                        totalAmountInBank3 += Double.parseDouble(bankAccount.getAmount());
-                                    }
-                                    databaseExtraIncome.addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
-                                                if (firebaseUser.getUid().equals(extraIncome.getUserID())) {
-                                                    extraIncomeList.add(extraIncome);
-                                                }
-                                            }
-                                            for (com.zeeshan.coinbudget.model.ExtraIncome extraIncome : extraIncomeList) {
-                                                totalExtraIncome3 += Double.parseDouble(extraIncome.getExtraAmount());
-                                            }
-                                            Date today = new Date();
-                                            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-                                            Date nextDay = null;
-
-                                            try {
-                                                nextDay = sdf.parse(incomeList.get(2).getDateOfIncome());
-                                                dayCount3 = daysBetweenTwoDates(today, nextDay);
-
-                                            } catch (ParseException e) {
-                                                e.printStackTrace();
-                                            }
-                                            Double income3 = Double.parseDouble(incomeList.get(2).getIncomeAmount());
-                                            totalRemainingBudget3 = 0.0;
-                                            totalAverageExpense3 = 0.0;
-
-                                            totalRemainingBudget3 = (totalExtraIncome3 + income3) - totalTransactionAmount;
-                                            totalAverageExpense3 = (totalTransactionAmount) / transactionsList.size();
-                                            txtRemainingDays3.setText(dayCount3 + " days");
-                                            txtRemainingBudget3.setText("$ " + totalRemainingBudget3);
-                                            txtAverageBudget3.setText("$ " + totalAverageExpense3.shortValue());
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                                            Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                    Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
             }
 
             @Override
@@ -1130,8 +970,154 @@ public class MainDashboard extends AppCompatActivity {
                 Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+        databaseBankAccount.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                totalAmountInBank = 0.0;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    BankAccount bankAccount = snapshot.getValue(BankAccount.class);
+                    if (firebaseUser.getUid().equals(bankAccount.getUserId())) {
+                        bankAccountList.add(bankAccount);
+                    }
+                }
+                if (bankAccountList.size() > 0) {
+                    totalAmountInBank = Double.parseDouble(bankAccountList.get(bankAccountList.size() - 1).getAmount());
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        databaseTransaction.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                transactionsList.clear();
+                totalTransactionAmount = 0.0;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Transactions transactions = snapshot.getValue(Transactions.class);
+                    if (firebaseUser.getUid().equals(transactions.getUserID())) {
+                        transactionsList.add(transactions);
+                    }
+                }
+                for (Transactions transactions : transactionsList) {
+                    totalTransactionAmount += Double.parseDouble(transactions.getTransactionAmount());
+                }
 
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        databaseExtraIncome.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    com.zeeshan.coinbudget.model.ExtraIncome extraIncome = snapshot.getValue(com.zeeshan.coinbudget.model.ExtraIncome.class);
+                    if (firebaseUser.getUid().equals(extraIncome.getUserID())) {
+                        extraIncomeList.add(extraIncome);
+                    }
+                }
+                for (com.zeeshan.coinbudget.model.ExtraIncome extraIncome : extraIncomeList) {
+                    totalExtraIncome += Double.parseDouble(extraIncome.getExtraAmount());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainDashboard.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadCards() {
+
+        if (incomeList.size() != 0 || incomeList != null) {
+            Date today = new Date();
+
+            Date nextDay;
+            nextDay = new Date();
+            dayCount = daysBetweenTwoDates(today, nextDay);
+            totalRemainingBudget = 0.0;
+            totalAverageExpense = 0.0;
+            totalRemainingBudget = (totalAmountInBank + totalExtraIncome) - totalTransactionAmount;
+            totalAverageExpense = (totalTransactionAmount) / transactionsList.size();
+
+            txtRemainingDays.setText(dayCount + " days");
+            txtRemainingBudget.setText(userCurrency + " " + totalRemainingBudget);
+            txtAverageBudget.setText(userCurrency + " " + totalAverageExpense.shortValue());
+
+        }
+        if (incomeList.size() > 0) {
+            cardView1.setVisibility(View.VISIBLE);
+            Date today = new Date();
+
+                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+                Date nextDay1;
+                try {
+                    nextDay1 = sdf.parse(incomeList.get(0).getDateOfIncome());
+                    dayCount1 = daysBetweenTwoDates(today, nextDay1) + 1;
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                Double income1 = Double.parseDouble(incomeList.get(0).getIncomeAmount());
+                totalRemainingBudget1 = 0.0;
+                totalAverageExpense1 = 0.0;
+                totalRemainingBudget1 = (income1 + totalRemainingBudget);
+                totalAverageExpense1 = (totalTransactionAmount) / transactionsList.size();
+
+                txtRemainingDays1.setText(dayCount1 + " days");
+                txtRemainingBudget1.setText(userCurrency + " " + totalRemainingBudget1);
+                txtAverageBudget1.setText(userCurrency + " " + totalAverageExpense1.shortValue());
+
+        }
+        if (incomeList.size() == 2) {
+            cardView2.setVisibility(View.VISIBLE);
+            Date today = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            Date nextDay;
+            try {
+                nextDay = sdf.parse(incomeList.get(1).getDateOfIncome());
+                dayCount2 = daysBetweenTwoDates(today, nextDay) + 1;
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Double income2 = Double.parseDouble(incomeList.get(1).getIncomeAmount());
+            totalRemainingBudget2 = 0.0;
+            totalAverageExpense2 = 0.0;
+            totalRemainingBudget2 = totalRemainingBudget1 + income2;
+            totalAverageExpense2 = (totalTransactionAmount) / transactionsList.size();
+
+            txtRemainingDays2.setText(dayCount2 + " days");
+            txtRemainingBudget2.setText(userCurrency + " " + totalRemainingBudget2);
+            txtAverageBudget2.setText(userCurrency + " " + totalAverageExpense2.shortValue());
+        }
+        if (incomeList.size() > 2) {
+            cardView3.setVisibility(View.VISIBLE);
+            Date today = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            Date nextDay;
+
+            try {
+                nextDay = sdf.parse(incomeList.get(2).getDateOfIncome());
+                dayCount3 = daysBetweenTwoDates(today, nextDay) + 1;
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Double income3 = Double.parseDouble(incomeList.get(2).getIncomeAmount());
+            totalRemainingBudget3 = 0.0;
+            totalAverageExpense3 = 0.0;
+
+            totalRemainingBudget3 = totalRemainingBudget2 + income3;
+            totalAverageExpense3 = (totalTransactionAmount) / transactionsList.size();
+            txtRemainingDays3.setText(dayCount3 + " days");
+            txtRemainingBudget3.setText(userCurrency + " " + totalRemainingBudget3);
+            txtAverageBudget3.setText(userCurrency + " " + totalAverageExpense3.shortValue());
+        }
     }
 
     public long daysBetweenTwoDates(Date dtOne, Date dtTwo) {
@@ -1166,11 +1152,12 @@ public class MainDashboard extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainDashboard.this);
         builder.setTitle(R.string.app_name);
         builder.setIcon(R.mipmap.ic_launcher);
-        builder.setMessage("Do you want to close the Coin DailyEntryDetail?")
+        builder.setMessage("Do you want to close the Coin Budget?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         finish();
+                        // System.exit(0);
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -1184,50 +1171,56 @@ public class MainDashboard extends AppCompatActivity {
 
     private void init() {
 
+        cardView = findViewById(R.id.cardViewIncome);
         cardView1 = findViewById(R.id.cardViewIncome1);
         cardView2 = findViewById(R.id.cardViewIncome2);
         cardView3 = findViewById(R.id.cardViewIncome3);
 
+        txtRemainingBudget = findViewById(R.id.txtRemainingBudget);
         txtRemainingBudget1 = findViewById(R.id.txtRemainingBudget1);
         txtRemainingBudget2 = findViewById(R.id.txtRemainingBudget2);
         txtRemainingBudget3 = findViewById(R.id.txtRemainingBudget3);
 
+        txtRemainingDays = findViewById(R.id.txtRemainingDays);
         txtRemainingDays1 = findViewById(R.id.txtRemainingDays1);
         txtRemainingDays2 = findViewById(R.id.txtRemainingDays2);
         txtRemainingDays3 = findViewById(R.id.txtRemainingDays3);
 
+        txtAverageBudget = findViewById(R.id.txtAverageBudget);
         txtAverageBudget1 = findViewById(R.id.txtAverageBudget1);
         txtAverageBudget2 = findViewById(R.id.txtAverageBudget2);
         txtAverageBudget3 = findViewById(R.id.txtAverageBudget3);
+
 
         incomeList = new ArrayList<>();
         transactionsList = new ArrayList<>();
         extraIncomeList = new ArrayList<>();
         bankAccountList = new ArrayList<>();
+        expenseOverviewList = new ArrayList<>();
 
 
-        incomeList = new ArrayList<>();
-        transactionsList = new ArrayList<>();
-        databaseTransaction = FirebaseDatabase.getInstance().getReference("Transaction");
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+
         progressBar = findViewById(R.id.progressBar);
         drawerLayout = findViewById(R.id.drawerLayout);
         toolbar = findViewById(R.id.toolbar);
         navigationView = findViewById(R.id.navigationView);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        expenseOverviewList = new ArrayList<>();
+
         btnAddExtraIncome = findViewById(R.id.btnAddExtraIncome);
         btnAddNewTransaction = findViewById(R.id.btnAddNewTransaction);
+
         databaseUser = FirebaseDatabase.getInstance().getReference("Users");
         databaseBankAccount = FirebaseDatabase.getInstance().getReference("Bank Account");
         databaseSavings = FirebaseDatabase.getInstance().getReference("Saving Goals");
         databaseIncome = FirebaseDatabase.getInstance().getReference("Income");
+        databaseTransaction = FirebaseDatabase.getInstance().getReference("Transaction");
         databaseExtraIncome = FirebaseDatabase.getInstance().getReference("Extra Income");
         databaseEstimatedExpense = FirebaseDatabase.getInstance().getReference("Estimated Monthly Expense");
         databaseRecurringExpense = FirebaseDatabase.getInstance().getReference("Recurring Monthly Expense");
 
         adView = findViewById(R.id.adView);
-        nativeExpressAdView=findViewById(R.id.nativeExpressAd);
+        nativeExpressAdView = findViewById(R.id.nativeExpressAd);
     }
 }

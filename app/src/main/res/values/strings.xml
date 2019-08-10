@@ -5,12 +5,9 @@
     <string name="facebook_login_protocol_scheme" translatable="false">fb2401378966809512</string>
 
     <string name="AdMob_app_id">ca-app-pub-3940256099942544~3347511713</string>
-    <string name="Banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
-    <string name="Interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="Native_Ads">ca-app-pub-3940256099942544/2247696110</string>
-
-
-
+    <string name="Banner_ad_unit_id">ca-app-pub-3940256099942544/16300978111</string>
+    <string name="Interstitial_ad_unit_id">ca-app-pub-3940256099942544/11033173712</string>
+    <string name="Native_Ads">ca-app-pub-3940256099942544/12247696110</string>
 
     <string name="don_t_have_an_account">Don\'t have an account?</string>
     <string name="password">Password</string>
@@ -39,9 +36,9 @@
     <string name="expenses">Expenses</string>
     <string name="savings">Savings</string>
     <string name="_250">$ 250</string>
-    <string name="remaining_budget_until_next_paycheck">Remaining Budget until next paycheck</string>
+    <string name="remaining_budget_until_next_paycheck">Remaining Budget until next paycheque</string>
     <string name="_15_days">15 Days</string>
-    <string name="until_next_paycheck">until next paycheck</string>
+    <string name="until_next_paycheck">until next paycheque</string>
     <string name="average_budget">Average Budget</string>
     <string name="bank_overview">Bank Overview</string>
     <string name="budget_overview">Budget Overview</string>
@@ -125,6 +122,7 @@
     <string name="_3548">$ 3548</string>
     <string name="totals">Totals</string>
     <string name="_5297_20">$ 5297.20</string>
+    <string name="_0_days">0 Days</string>
 
     <string-array name="Frequency">
         <item>Monthly</item>

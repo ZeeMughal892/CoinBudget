@@ -95,7 +95,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                 datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String Date = month + "/" + day + "/" + year;
+                        String Date = month+1 + "/" + day + "/" + year;
                         ed_Date.setText(Date);
                     }
                 });
@@ -116,7 +116,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                 btnToday.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
                         Calendar cal = Calendar.getInstance();
                         cal.add(Calendar.DATE, 0);
                         ed_Date.setText((dateFormat.format(cal.getTime())));
@@ -125,7 +125,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                 btnYesterday.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
                         Calendar cal = Calendar.getInstance();
                         cal.add(Calendar.DATE, -1);
                         ed_Date.setText((dateFormat.format(cal.getTime())));
