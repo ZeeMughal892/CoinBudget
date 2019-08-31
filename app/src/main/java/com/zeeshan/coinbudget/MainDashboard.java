@@ -58,10 +58,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.zeeshan.coinbudget.APICommunicator.APICurrency;
-import com.zeeshan.coinbudget.interfaces.CurrencyService;
 import com.zeeshan.coinbudget.model.BankAccount;
-import com.zeeshan.coinbudget.model.CountryModel;
 import com.zeeshan.coinbudget.model.ExpenseOverview;
 import com.zeeshan.coinbudget.model.Income;
 import com.zeeshan.coinbudget.model.Savings;
@@ -85,10 +82,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 public class MainDashboard extends AppCompatActivity {
 
 
@@ -103,15 +96,14 @@ public class MainDashboard extends AppCompatActivity {
     NavigationView navigationView;
     ProgressBar progressBar;
     BottomNavigationView bottomNavigationView;
-    RecyclerView recyclerView;
 
     FloatingActionButton btnAddExtraIncome, btnAddNewTransaction;
     ConstraintLayout messageContainer;
 
-    Double totalExtraIncome = 0.0;
-    Double totalRecurring = 0.0;
-    Double totalIncome = 0.0;
-    Double totalEstimated = 0.0;
+    Double totalExtraIncome = 0.00;
+    Double totalRecurring = 0.00;
+    Double totalIncome = 0.00;
+    Double totalEstimated = 0.00;
 
     Dialog dialogReset, dialogUserInfo, dialogFrequency, dialogCurrency, dialogBank,
             dialogPin, dialogLogout, dialogReminder, dialogBudget, dialogIncome, dialogExpenses, dialogSavings;
@@ -130,18 +122,19 @@ public class MainDashboard extends AppCompatActivity {
     String format;
     ProgressBar progressBarCurrency, progressBarBudget;
     DatePickerDialog datePickerDialog;
+    DatePickerDialog.OnDateSetListener dateSetListener;
 
     int hourAlarm, minuteAlarm;
     String fullName, userName, pin, currency, payFrequency;
     Boolean isPremium = false;
     String userCurrency;
 
-    Double totalAccountBalance = 0.0,
-            totalRemainingBudget = 0.0, totalAverageExpense = 0.0,
-            totalRemainingBudget1 = 0.0, totalAverageExpense1 = 0.0,
-            totalRemainingBudget2 = 0.0, totalAverageExpense2 = 0.0, totalExtraIncome2 = 0.0,
-            totalRemainingBudget3 = 0.0, totalAverageExpense3 = 0.0, totalExtraIncome3 = 0.0,
-            totalAmountInBank = 0.0, totalTransactionAmount = 0.0;
+    Double totalAccountBalance = 0.00,
+            totalRemainingBudget = 0.00, totalAverageExpense = 0.00,
+            totalRemainingBudget1 = 0.00, totalAverageExpense1 = 0.00,
+            totalRemainingBudget2 = 0.00, totalAverageExpense2 = 0.00,
+            totalRemainingBudget3 = 0.00, totalAverageExpense3 = 0.00,
+            totalAmountInBank = 0.00, totalTransactionAmount = 0.00;
 
 
     List<Income> incomeList;
@@ -675,21 +668,25 @@ public class MainDashboard extends AppCompatActivity {
                             }
                         });
 
+                        btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Calendar calendar = Calendar.getInstance();
+                                int year = calendar.get(Calendar.YEAR);
+                                int month = calendar.get(Calendar.MONTH);
+                                int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                                datePickerDialog = new DatePickerDialog(MainDashboard.this, dateSetListener, year, month, day);
+                                datePickerDialog.show();
+                            }
+                        });
+                        dateSetListener = new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                                 String Date = (month + 1) + "/" + day + "/" + year;
                                 edDateBank.setText(Date);
                             }
-                        });
-                        btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                datePickerDialog.show();
-                            }
-                        });
+                        };
                         btnAddBankAmount.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -722,23 +719,25 @@ public class MainDashboard extends AppCompatActivity {
                         btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
                         btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
 
-
-                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month + 1 + "/" + day + "/" + year;
-                                edIncomeDate.setText(Date);
-                            }
-                        });
-
-
                         btnSelectDateIncome.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                Calendar calendar = Calendar.getInstance();
+                                int year = calendar.get(Calendar.YEAR);
+                                int month = calendar.get(Calendar.MONTH);
+                                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                                datePickerDialog = new DatePickerDialog(MainDashboard.this, dateSetListener, year, month, day);
                                 datePickerDialog.show();
                             }
                         });
+                        dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = (month + 1) + "/" + day + "/" + year;
+                                edIncomeDate.setText(Date);
+                            }
+                        };
                         btnIncomeDetails.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -802,21 +801,25 @@ public class MainDashboard extends AppCompatActivity {
                         btnAddSavings = dialogSavings.findViewById(R.id.btnAddSavings);
 
 
-                        datePickerDialog = new DatePickerDialog(MainDashboard.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month + 1 + "/" + day + "/" + year;
-                                edSavingDate.setText(Date);
-                            }
-                        });
-
                         btnSelectGoalDate.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                Calendar calendar = Calendar.getInstance();
+                                int year = calendar.get(Calendar.YEAR);
+                                int month = calendar.get(Calendar.MONTH);
+                                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                                datePickerDialog = new DatePickerDialog(MainDashboard.this, dateSetListener, year, month, day);
                                 datePickerDialog.show();
                             }
                         });
+                        dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = (month + 1) + "/" + day + "/" + year;
+                                edSavingDate.setText(Date);
+                            }
+                        };
                         btnSavingDetails.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -1041,14 +1044,26 @@ public class MainDashboard extends AppCompatActivity {
             Date nextDay;
             nextDay = new Date();
             dayCount = daysBetweenTwoDates(today, nextDay);
-            totalRemainingBudget = 0.0;
-            totalAverageExpense = 0.0;
+            totalRemainingBudget = 0.00;
+            totalAverageExpense = 0.00;
+
             totalRemainingBudget = (totalAmountInBank + totalExtraIncome) - totalTransactionAmount;
+
+
             totalAverageExpense = (totalTransactionAmount) / transactionsList.size();
+
+            if(totalAverageExpense == 0){
+                txtAverageBudget.setText(userCurrency + " 0.00"  );
+
+            }else{
+                txtAverageBudget.setText(userCurrency + " " + totalAverageExpense.shortValue());
+
+            }
+
+
 
             txtRemainingDays.setText(dayCount + " days");
             txtRemainingBudget.setText(userCurrency + " " + totalRemainingBudget);
-            txtAverageBudget.setText(userCurrency + " " + totalAverageExpense.shortValue());
 
         }
         if (incomeList.size() > 0) {
@@ -1064,8 +1079,8 @@ public class MainDashboard extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 Double income1 = Double.parseDouble(incomeList.get(0).getIncomeAmount());
-                totalRemainingBudget1 = 0.0;
-                totalAverageExpense1 = 0.0;
+                totalRemainingBudget1 = 0.00;
+                totalAverageExpense1 = 0.00;
                 totalRemainingBudget1 = (income1 + totalRemainingBudget);
                 totalAverageExpense1 = (totalTransactionAmount) / transactionsList.size();
 
@@ -1086,8 +1101,8 @@ public class MainDashboard extends AppCompatActivity {
                 e.printStackTrace();
             }
             Double income2 = Double.parseDouble(incomeList.get(1).getIncomeAmount());
-            totalRemainingBudget2 = 0.0;
-            totalAverageExpense2 = 0.0;
+            totalRemainingBudget2 = 0.00;
+            totalAverageExpense2 = 0.00;
             totalRemainingBudget2 = totalRemainingBudget1 + income2;
             totalAverageExpense2 = (totalTransactionAmount) / transactionsList.size();
 
@@ -1109,8 +1124,8 @@ public class MainDashboard extends AppCompatActivity {
                 e.printStackTrace();
             }
             Double income3 = Double.parseDouble(incomeList.get(2).getIncomeAmount());
-            totalRemainingBudget3 = 0.0;
-            totalAverageExpense3 = 0.0;
+            totalRemainingBudget3 = 0.00;
+            totalAverageExpense3 = 0.00;
 
             totalRemainingBudget3 = totalRemainingBudget2 + income3;
             totalAverageExpense3 = (totalTransactionAmount) / transactionsList.size();
@@ -1222,5 +1237,11 @@ public class MainDashboard extends AppCompatActivity {
 
         adView = findViewById(R.id.adView);
         nativeExpressAdView = findViewById(R.id.nativeExpressAd);
+
+
+
     }
+
+
+
 }

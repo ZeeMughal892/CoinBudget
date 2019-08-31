@@ -25,6 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 import com.zeeshan.coinbudget.R;
+import com.zeeshan.coinbudget.Transaction;
 import com.zeeshan.coinbudget.model.ExtraIncome;
 import com.zeeshan.coinbudget.model.Lookup;
 import com.zeeshan.coinbudget.model.Transactions;
@@ -40,6 +41,7 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
     private Dialog dialog;
     TextView txtLookup;
     DatePickerDialog datePickerDialog;
+    DatePickerDialog.OnDateSetListener dateSetListener;
     EditText ed_Amount, ed_Notes, ed_Date;
     Button btnAdd, btnToday, btnYesterday, btnOtherDay;
     ImageView imgIconDialog;
@@ -91,14 +93,6 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                 ed_Notes = dialog.findViewById(R.id.ed_Notes);
                 ed_Date = dialog.findViewById(R.id.ed_Date);
 
-                datePickerDialog = new DatePickerDialog(itemView.getContext());
-                datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String Date = month+1 + "/" + day + "/" + year;
-                        ed_Date.setText(Date);
-                    }
-                });
 
                 btnAdd = dialog.findViewById(R.id.btnAdd);
                 btnToday = dialog.findViewById(R.id.btnToday);
@@ -106,13 +100,28 @@ public class LookupAdapter extends RecyclerView.Adapter<LookupAdapter.MyViewHold
                 btnOtherDay = dialog.findViewById(R.id.btnOtherDate);
 
                 imgIconDialog = dialog.findViewById(R.id.imgLogo);
-
                 btnOtherDay.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        Calendar calendar = Calendar.getInstance();
+                        int year = calendar.get(Calendar.YEAR);
+                        int month = calendar.get(Calendar.MONTH);
+                        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                        datePickerDialog = new DatePickerDialog(itemView.getContext(), dateSetListener, year, month, day);
                         datePickerDialog.show();
                     }
                 });
+                dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        String Date = (month + 1) + "/" + day + "/" + year;
+                        ed_Date.setText(Date);
+                    }
+                };
+
+
+
                 btnToday.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

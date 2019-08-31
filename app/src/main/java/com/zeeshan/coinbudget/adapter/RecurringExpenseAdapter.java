@@ -25,11 +25,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
+import com.zeeshan.coinbudget.EstimatedExpenses;
 import com.zeeshan.coinbudget.R;
 import com.zeeshan.coinbudget.model.Lookup;
 import com.zeeshan.coinbudget.model.RecurringExpenses;
 
 
+import java.util.Calendar;
 import java.util.List;
 
 public class RecurringExpenseAdapter extends RecyclerView.Adapter<RecurringExpenseAdapter.MyViewHolder> {
@@ -40,6 +42,7 @@ public class RecurringExpenseAdapter extends RecyclerView.Adapter<RecurringExpen
     private DatePickerDialog datePickerDialog;
     private EditText ed_AmountRecurring, ed_DateRecurring, ed_Description;
     private Button btnAddRecurring, btnDateRecurring;
+    DatePickerDialog.OnDateSetListener dateSetListener;
     private ImageView imgIconDialog;
     private DatabaseReference databaseReference;
     private Spinner spinnerRecurring;
@@ -93,21 +96,26 @@ public class RecurringExpenseAdapter extends RecyclerView.Adapter<RecurringExpen
                 btnDateRecurring = dialogRecurring.findViewById(R.id.btnSelectDateRecurring);
                 btnAddRecurring = dialogRecurring.findViewById(R.id.btnAddRecurring);
 
-                datePickerDialog = new DatePickerDialog(itemView.getContext());
-                datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String Date = month+1 + "/" + day + "/" + year;
-                        ed_DateRecurring.setText(Date);
-                    }
-                });
-
                 btnDateRecurring.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        Calendar calendar = Calendar.getInstance();
+                        int year = calendar.get(Calendar.YEAR);
+                        int month = calendar.get(Calendar.MONTH);
+                        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                        datePickerDialog = new DatePickerDialog(itemView.getContext(), dateSetListener, year, month, day);
                         datePickerDialog.show();
                     }
                 });
+                dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        String Date = (month + 1) + "/" + day + "/" + year;
+                        ed_DateRecurring.setText(Date);
+                    }
+                };
+
 
                 ed_Description.setText(lookupList.get(myViewHolder.getAdapterPosition()).getLookUpItemName());
 

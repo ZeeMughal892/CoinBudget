@@ -53,6 +53,7 @@ import com.zeeshan.coinbudget.model.Transactions;
 import com.zeeshan.coinbudget.model.User;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class DailyEntryDetail extends AppCompatActivity {
@@ -102,6 +103,7 @@ public class DailyEntryDetail extends AppCompatActivity {
     private List<Object> recyclerItems = new ArrayList<>();
 
     String message, userCurrency;
+    DatePickerDialog.OnDateSetListener dateSetListener;
 
 
     private Double totalAccountBalance = 0.0;
@@ -199,21 +201,25 @@ public class DailyEntryDetail extends AppCompatActivity {
                             }
                         });
 
-                        datePickerDialog = new DatePickerDialog(DailyEntryDetail.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month + 1 + "/" + day + "/" + year;
-                                edDateBank.setText(Date);
-                            }
-                        });
-
                         btnSelectDateBank.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                Calendar calendar = Calendar.getInstance();
+                                int year = calendar.get(Calendar.YEAR);
+                                int month = calendar.get(Calendar.MONTH);
+                                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                                datePickerDialog = new DatePickerDialog(DailyEntryDetail.this, dateSetListener, year, month, day);
                                 datePickerDialog.show();
                             }
                         });
+                        dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = (month + 1) + "/" + day + "/" + year;
+                                edDateBank.setText(Date);
+                            }
+                        };
 
                         btnAddBankAmount.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -344,20 +350,30 @@ public class DailyEntryDetail extends AppCompatActivity {
                         btnAddIncome = dialogIncome.findViewById(R.id.btnAddIncome);
                         btnSelectDateIncome = dialogIncome.findViewById(R.id.btnSelectDateIncome);
 
-                        datePickerDialog = new DatePickerDialog(DailyEntryDetail.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month + 1 + "/" + day + "/" + year;
-                                edIncomeDate.setText(Date);
-                            }
-                        });
+                        Calendar calendar2 = Calendar.getInstance();
+                        int year2 = calendar2.get(Calendar.YEAR);
+                        int month2 = calendar2.get(Calendar.MONTH);
+                        int day2 = calendar2.get(Calendar.DAY_OF_MONTH);
+
                         btnSelectDateIncome.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                Calendar calendar = Calendar.getInstance();
+                                int year = calendar.get(Calendar.YEAR);
+                                int month = calendar.get(Calendar.MONTH);
+                                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                                datePickerDialog = new DatePickerDialog(DailyEntryDetail.this, dateSetListener, year, month, day);
                                 datePickerDialog.show();
                             }
                         });
+                        dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = (month + 1) + "/" + day + "/" + year;
+                                edIncomeDate.setText(Date);
+                            }
+                        };
                         btnIncomeDetails.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -421,20 +437,30 @@ public class DailyEntryDetail extends AppCompatActivity {
                         btnSavingDetails = dialogSavings.findViewById(R.id.btnSavingDetails);
                         btnAddSavings = dialogSavings.findViewById(R.id.btnAddSavings);
 
-                        datePickerDialog = new DatePickerDialog(DailyEntryDetail.this);
-                        datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                                String Date = month + 1 + "/" + day + "/" + year;
-                                edSavingDate.setText(Date);
-                            }
-                        });
+                        Calendar calendar1 = Calendar.getInstance();
+                        int year1 = calendar1.get(Calendar.YEAR);
+                        int month1 = calendar1.get(Calendar.MONTH);
+                        int day1 = calendar1.get(Calendar.DAY_OF_MONTH);
+
                         btnSelectGoalDate.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                Calendar calendar = Calendar.getInstance();
+                                int year = calendar.get(Calendar.YEAR);
+                                int month = calendar.get(Calendar.MONTH);
+                                int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+                                datePickerDialog = new DatePickerDialog(DailyEntryDetail.this, dateSetListener, year, month, day);
                                 datePickerDialog.show();
                             }
                         });
+                        dateSetListener = new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                                String Date = (month + 1) + "/" + day + "/" + year;
+                                edSavingDate.setText(Date);
+                            }
+                        };
                         btnSavingDetails.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
